@@ -43,12 +43,10 @@ export const userSignUp = async (req, res) => {
         const url = `${process.env.FrontEnd_Url}${userData._id}/varification/${emailToken.token}`;
         console.log(url);
         sendMail(email, "Varification mail", url);
-        return res
-          .status(200)
-          .json({
-            created: true,
-            message: "Please confirm the email that was sent to your account.",
-          });
+        return res.status(200).json({
+          created: true,
+          message: "Please confirm the email that was sent to your account.",
+        });
       }
     }
   } catch (error) {
@@ -60,8 +58,8 @@ export const userSignUp = async (req, res) => {
 
 export const userLogin = async (req, res) => {
   try {
-    const {email,password} = req.body
-    const exist = await userDb.findOne({ email:email });
+    const { email, password } = req.body;
+    const exist = await userDb.findOne({ email: email });
     if (exist) {
       const passMatch = await bcrypt.compare(password, exist.password);
       if (passMatch) {
@@ -69,9 +67,10 @@ export const userLogin = async (req, res) => {
           expiresIn: "30d",
         });
         return res.status(200).json({
-          loginData:exist,
+          loginData: exist,
           loginSuccess: true,
-          message: "Login Successfully",jwtToken
+          message: "Login Successfully",
+          jwtToken,
         });
       } else {
         res.status(200).json({
@@ -104,20 +103,88 @@ export const userVarification = async (req, res) => {
           .status(200)
           .json({ loginSuccess: true, message: "Login successfully" });
       } else {
+        return res.status(400).json({
+          loginSuccess: false,
+          message: "The link you clicked is not valid.",
+        });
+      }
+    } else {
+      return res.status(400).json({
+        loginSuccess: false,
+        message: "The entered email addresses do not match.",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//---------------------------------------------Forget password----------------------------------------//
+
+export const forgetPassword = async (req, res) => {
+  try {
+    const exist = await userDb.findOne({ email: req.body.email });
+    if (!exist) {
+      return res
+        .status(400)
+        .json({ message: "The entered email addresses do not match." });
+    } else {
+      if (!exist.is_varified) {
         return res
           .status(400)
-          .json({
-            loginSuccess: false,
-            message: "The link you clicked is not valid.",
-          });
+          .json({ message: "Your account has yet to be verified." });
+      } else {
+        const emailToken = await new authToken({
+          userId: exist._id,
+          token: crypto.randomBytes(32).toString("hex"),
+        }).save();
+        const url = `${process.env.FrontEnd_Url}${exist._id}/resetPassword/${emailToken.token}`;
+        console.log(url);
+        sendMail(exist.email, "Reset password", url);
+        return res.status(200).json({
+          created: true,
+          message: "Please confirm the email that was sent to your account.",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//---------------------------------------------Reset password----------------------------------------//
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { password } = req.body.values;
+    const hashedPassword = await passwordHasher(password);
+    const validLink = await authTokenDb.findOne({ userId: req.body.userId });
+
+    if (validLink.token == req.body.token) {
+      await authTokenDb.deleteOne({ userId: req.body.userId });
+      const updated = await userDb.findByIdAndUpdate(
+        { _id: req.body.userId },
+        {
+          $set: {
+            password: hashedPassword,
+          },
+        }
+      );
+
+      if (updated) {
+        return res
+          .status(200)
+          .json({ reseted: true, message: "Your password reseted" });
+      } else {
+        return res.status(400).json({
+          reseted: false,
+          message: "An error occurred during the reset process.",
+        });
       }
     } else {
       return res
         .status(400)
-        .json({
-          loginSuccess: false,
-          message: "The entered email addresses do not match.",
-        });
+        .json({ message: "The link you clicked is not valid." });
     }
   } catch (error) {
     console.log(error);
