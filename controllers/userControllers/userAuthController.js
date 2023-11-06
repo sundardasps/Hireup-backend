@@ -73,8 +73,7 @@ export const userLogin = async (req, res) => {
           jwtToken,
         });
       } else {
-        res.status(200).json({
-          loginSuccess: false,
+        res.json({
           message: "The password you entered is incorrect.",
         });
       }
@@ -90,7 +89,8 @@ export const userLogin = async (req, res) => {
 
 export const userVarification = async (req, res) => {
   try {
-    const varified = await userDb.findOne({ _id: req.body.userId });
+    const {email}  = req.body.values
+    const varified = await userDb.findOne({email: email});
     if (varified) {
       const tokenCheck = await authTokenDb.findOne({ token: req.body.token });
       if (tokenCheck) {
@@ -103,13 +103,13 @@ export const userVarification = async (req, res) => {
           .status(200)
           .json({ loginSuccess: true, message: "Login successfully" });
       } else {
-        return res.status(400).json({
+        return res.json({
           loginSuccess: false,
           message: "The link you clicked is not valid.",
         });
       }
     } else {
-      return res.status(400).json({
+      return res.json({
         loginSuccess: false,
         message: "The entered email addresses do not match.",
       });
