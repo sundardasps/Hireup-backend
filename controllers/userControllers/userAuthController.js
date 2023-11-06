@@ -160,7 +160,7 @@ export const resetPassword = async (req, res) => {
     const hashedPassword = await passwordHasher(password);
     const validLink = await authTokenDb.findOne({ userId: req.body.userId });
 
-    if (validLink.token == req.body.token) {
+    if (validLink && validLink.token == req.body.token) {
       await authTokenDb.deleteOne({ userId: req.body.userId });
       const updated = await userDb.findByIdAndUpdate(
         { _id: req.body.userId },

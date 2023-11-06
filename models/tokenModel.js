@@ -7,7 +7,7 @@ const Token = mongoose.Schema({
         ref:"user"
     },
 
-    companyid:{
+    companyId:{
         type:Schema.Types.ObjectId,
         ref:"company"
     },
