@@ -30,3 +30,6 @@ export const adminLogin = async (req, res) => {
     }
   } catch (error) {}
 };
+
+//---------------------------------------Users list-------------------------------------//
+
