@@ -73,7 +73,7 @@ export const companyVarification = async (req, res) => {
             message: "Your account verified success fully",
           });
         } else {
-          return res.status(400).json({
+          return res.json({
             message: "The database server is unreachable.",
           });
         }
@@ -97,6 +97,8 @@ export const companyLogin = async (req, res) => {
     if (exist) {
       const passwordCheck = await bcrypt.compare(password, exist.password);
       if (passwordCheck) {
+
+        if(exist.is_varified){
         const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
           expiresIn: "30d",
         });
@@ -106,6 +108,22 @@ export const companyLogin = async (req, res) => {
           message: "Logined successfully",
           loginSuccess: true,
         });
+
+        }else{
+          const emailToken = await new authTokenDb({
+            companyId: exist._id,
+            token: crypto.randomBytes(32).toString("hex"),
+          }).save();
+  
+          const url = `${process.env.FrontEnd_Url}company/${exist._id}/varification/${emailToken.token}`;
+          console.log(url);
+          sendMail(email, "Company Varification mail", url);
+          return res.status(200).json({
+            created: true,
+            message: "Your account is not verified; an email has been sent to your account. Please click the link to verify.",
+          });
+        }
+
       } else {
         return res.json({
           loginSuccess: false,
@@ -155,6 +173,9 @@ export const companyforgetPassword = async (req, res) => {
   }
 };
 
+//--------------------------------------------- Forget password ----------------------------------------//
+
+
 export const companyResetPassword = async (req, res) => {
   try {
     const { password } = req.body.values;
@@ -177,7 +198,7 @@ export const companyResetPassword = async (req, res) => {
       if (updated) {
         return res
           .status(200)
-          .json({ reseted: true, message: "Your password reseted" });
+          .json({ reseted:true, message: "Your password reseted" });
       } else {
         return res.json({
           reseted: false,

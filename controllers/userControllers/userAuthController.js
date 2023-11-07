@@ -63,7 +63,9 @@ export const userLogin = async (req, res) => {
     if (exist) {
       const passMatch = await bcrypt.compare(password, exist.password);
       if (passMatch) {
-        const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
+        if(exist.is_varified){
+          
+          const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
           expiresIn: "30d",
         });
         return res.status(200).json({
@@ -77,6 +79,22 @@ export const userLogin = async (req, res) => {
           message: "The password you entered is incorrect.",
         });
       }
+    }else{
+         
+        const emailToken = await new authToken({
+          userId: exist._id,
+          token: crypto.randomBytes(32).toString("hex"),
+        }).save();
+
+        const url = `${process.env.FrontEnd_Url}${exist._id}/varification/${emailToken.token}`;
+        console.log(url);
+        sendMail(email, "Varification mail", url);
+        return res.status(200).json({
+          created: true,
+          message: "Your account is not verified; an email has been sent to your account. Please click the link to verify.",
+        });
+    }
+
     } else {
       res.json({ message: "The entered email addresses do not match." });
     }
