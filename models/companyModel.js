@@ -17,13 +17,17 @@ const companySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  is_varified:{
-     type:Boolean,
-     default:false,
+  is_varified: {
+    type: Boolean,
+    default: false,
   },
   role: {
     type: String,
     default: "company",
+  },
+  is_admin: {
+    type: String,
+    default: false,
   },
 });
 

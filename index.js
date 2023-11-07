@@ -16,6 +16,7 @@ app.use(express.json())
 
 import userRoute from './routes/userRoutes.js'
 import companyRoute from './routes/companyRoutes.js'
+import adminRoute from './routes/adminRoutes.js'
 
 //-------------------------------Cors config----------------------------//
 
@@ -29,7 +30,7 @@ app.use(cors(corsOptions));
 
 app.use("/user",userRoute);
 app.use("/company",companyRoute);
-// app.use("/admin", adminRoute);
+app.use("/admin", adminRoute);
 
 //----------------------------------Server------------------------------//
 

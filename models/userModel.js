@@ -18,17 +18,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  is_varified:{
-    type:Boolean,
-    default:false
-  }
-  ,
-  role:{
-     type:String,
-     default:"user"
-  }
-  
-
+  is_varified: {
+    type: Boolean,
+    default: false,
+  },
+  role: {
+    type: String,
+    default: "user",
+  },
+  is_admin: {
+    type: String,
+    default: false,
+  },
 });
 
 const user = mongoose.model("user", userSchema);
