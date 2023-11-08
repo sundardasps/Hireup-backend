@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: false,
   },
+  is_google:{
+    type:Boolean,
+    default:false
+  }
 });
 
 const user = mongoose.model("user", userSchema);

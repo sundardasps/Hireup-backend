@@ -63,7 +63,7 @@ export const userLogin = async (req, res) => {
     if (exist) {
       const passMatch = await bcrypt.compare(password, exist.password);
       if (passMatch) {
-        if (exist.is_varified) {
+        if (exist.is_varified || exist.is_google) {
           const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
             expiresIn: "30d",
           });
@@ -194,6 +194,46 @@ export const resetPassword = async (req, res) => {
       }
     } else {
       return res.json({ message: "The link you clicked is not valid." });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const googleRegister = async (req, res) => {
+  try {
+    const { email, id, name, number } = req.body;
+    const exist = await userDb.findOne({ email: email });
+    if (exist) {
+      return res.json({
+        message: "The email you provided is already registered.",
+      });
+    } else {
+      const hashedpass = await passwordHasher(id);
+      const googleUser = new userDb({
+        userName: name,
+        email,
+        number: number || "000000000000",
+        password: hashedpass,
+        is_google: true,
+        is_varified: true,
+      });
+      const userData = await googleUser
+        .save()
+        .then(console.log("user registered"));
+
+      if (userData) {
+        const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
+          expiresIn: "30d",
+        });
+        return res
+          .status(200)
+          .json({
+            created: true,
+            message: "Google registration successfull",
+            jwtToken,
+          });
+      }
     }
   } catch (error) {
     console.log(error);
