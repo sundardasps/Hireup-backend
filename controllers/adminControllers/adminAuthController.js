@@ -1,6 +1,5 @@
 import userDb from "../../models/userModel.js";
 import bcrypt from "bcrypt";
-import e from "express";
 import jwt from "jsonwebtoken";
 
 export const adminLogin = async (req, res) => {

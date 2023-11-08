@@ -149,7 +149,6 @@ export const companyforgetPassword = async (req, res) => {
 
     if (!exist) {
       return res
-        .status(400)
         .json({ message: "The entered email addresses do not match." });
     } else {
       if (!exist.is_varified) {

@@ -63,38 +63,35 @@ export const userLogin = async (req, res) => {
     if (exist) {
       const passMatch = await bcrypt.compare(password, exist.password);
       if (passMatch) {
-        if(exist.is_varified){
-          
+        if (exist.is_varified) {
           const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
-          expiresIn: "30d",
-        });
-        return res.status(200).json({
-          loginData: exist,
-          loginSuccess: true,
-          message: "Login Successfully",
-          jwtToken,
-        });
+            expiresIn: "30d",
+          });
+          return res.status(200).json({
+            loginData: exist,
+            loginSuccess: true,
+            message: "Login Successfully",
+            jwtToken,
+          });
+        } else {
+          const emailToken = await new authToken({
+            userId: exist._id,
+            token: crypto.randomBytes(32).toString("hex"),
+          }).save();
+
+          const url = `${process.env.FrontEnd_Url}${exist._id}/varification/${emailToken.token}`;
+          sendMail(email, "Varification mail", url);
+          return res.status(200).json({
+            created: true,
+            message:
+              "Your account is not verified; an email has been sent to your account. Please click the link to verify.",
+          });
+        }
       } else {
         res.json({
           message: "The password you entered is incorrect.",
         });
       }
-    }else{
-         
-        const emailToken = await new authToken({
-          userId: exist._id,
-          token: crypto.randomBytes(32).toString("hex"),
-        }).save();
-
-        const url = `${process.env.FrontEnd_Url}${exist._id}/varification/${emailToken.token}`;
-        console.log(url);
-        sendMail(email, "Varification mail", url);
-        return res.status(200).json({
-          created: true,
-          message: "Your account is not verified; an email has been sent to your account. Please click the link to verify.",
-        });
-    }
-
     } else {
       res.json({ message: "The entered email addresses do not match." });
     }
@@ -107,8 +104,8 @@ export const userLogin = async (req, res) => {
 
 export const userVarification = async (req, res) => {
   try {
-    const {email}  = req.body.values
-    const varified = await userDb.findOne({email: email});
+    const { email } = req.body.values;
+    const varified = await userDb.findOne({ email: email });
     if (varified) {
       const tokenCheck = await authTokenDb.findOne({ token: req.body.token });
       if (tokenCheck) {
@@ -143,14 +140,10 @@ export const forgetPassword = async (req, res) => {
   try {
     const exist = await userDb.findOne({ email: req.body.email });
     if (!exist) {
-      return res
-        .status(400)
-        .json({ message: "The entered email addresses do not match." });
+      return res.json({ message: "The entered email addresses do not match." });
     } else {
       if (!exist.is_varified) {
-        return res
-          .status(400)
-          .json({ message: "Your account has yet to be verified." });
+        return res.json({ message: "Your account has yet to be verified." });
       } else {
         const emailToken = await new authToken({
           userId: exist._id,
@@ -200,9 +193,7 @@ export const resetPassword = async (req, res) => {
         });
       }
     } else {
-      return res
-        .status(400)
-        .json({ message: "The link you clicked is not valid." });
+      return res.json({ message: "The link you clicked is not valid." });
     }
   } catch (error) {
     console.log(error);
