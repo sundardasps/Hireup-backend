@@ -97,7 +97,8 @@ export const companyLogin = async (req, res) => {
     if (exist) {
       const passwordCheck = await bcrypt.compare(password, exist.password);
       if (passwordCheck) {
-        if (exist.is_varified) {
+        if (exist.is_varified  
+          || exist.is_google) {
           const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
             expiresIn: "30d",
           });
