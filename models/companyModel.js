@@ -29,6 +29,10 @@ const companySchema = new mongoose.Schema({
     type: String,
     default: false,
   },
+  is_google:{
+    type:Boolean,
+    default:false
+  }
 });
 
 const company = mongoose.model("company", companySchema);

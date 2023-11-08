@@ -97,33 +97,31 @@ export const companyLogin = async (req, res) => {
     if (exist) {
       const passwordCheck = await bcrypt.compare(password, exist.password);
       if (passwordCheck) {
-
-        if(exist.is_varified){
-        const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
-          expiresIn: "30d",
-        });
-        return res.status(200).json({
-          loginData: exist,
-          jwtToken,
-          message: "Logined successfully",
-          loginSuccess: true,
-        });
-
-        }else{
+        if (exist.is_varified) {
+          const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
+            expiresIn: "30d",
+          });
+          return res.status(200).json({
+            loginData: exist,
+            jwtToken,
+            message: "Logined successfully",
+            loginSuccess: true,
+          });
+        } else {
           const emailToken = await new authTokenDb({
             companyId: exist._id,
             token: crypto.randomBytes(32).toString("hex"),
           }).save();
-  
+
           const url = `${process.env.FrontEnd_Url}company/${exist._id}/varification/${emailToken.token}`;
           console.log(url);
           sendMail(email, "Company Varification mail", url);
           return res.status(200).json({
             created: true,
-            message: "Your account is not verified; an email has been sent to your account. Please click the link to verify.",
+            message:
+              "Your account is not verified; an email has been sent to your account. Please click the link to verify.",
           });
         }
-
       } else {
         return res.json({
           loginSuccess: false,
@@ -148,8 +146,7 @@ export const companyforgetPassword = async (req, res) => {
     const exist = await companyDb.findOne({ email: req.body.email });
 
     if (!exist) {
-      return res
-        .json({ message: "The entered email addresses do not match." });
+      return res.json({ message: "The entered email addresses do not match." });
     } else {
       if (!exist.is_varified) {
         return res.json({ message: "Your account has yet to be verified." });
@@ -174,7 +171,6 @@ export const companyforgetPassword = async (req, res) => {
 
 //--------------------------------------------- Forget password ----------------------------------------//
 
-
 export const companyResetPassword = async (req, res) => {
   try {
     const { password } = req.body.values;
@@ -197,7 +193,7 @@ export const companyResetPassword = async (req, res) => {
       if (updated) {
         return res
           .status(200)
-          .json({ reseted:true, message: "Your password reseted" });
+          .json({ reseted: true, message: "Your password reseted" });
       } else {
         return res.json({
           reseted: false,
@@ -206,6 +202,47 @@ export const companyResetPassword = async (req, res) => {
       }
     } else {
       return res.json({ message: "The link you clicked is not valid." });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//------------------------------------------ Google registration ----------------------------------------//
+
+export const googleRegister = async (req, res) => {
+  try {
+    const { email, id, name, number } = req.body;
+    const exist = await companyDb.findOne({ email: email });
+    if (exist) {
+      return res.json({
+        message: "The email you provided is already registered.",
+      });
+    } else {
+      const hashedpass = await passwordHasher(id);
+      const googleUser = new companyDb({
+        companyName: name,
+        email,
+        number: number || "000000000000",
+        password: hashedpass,
+        is_google: true,
+        is_varified: true,
+      });
+      const userData = await googleUser
+        .save()
+        .then(console.log("user registered"));
+
+      if (userData) {
+        const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
+          expiresIn: "30d",
+        });
+        return res.status(200).json({
+          created: true,
+          message: "Google registration successfull",
+          jwtToken,
+          userData,
+        });
+      }
     }
   } catch (error) {
     console.log(error);
