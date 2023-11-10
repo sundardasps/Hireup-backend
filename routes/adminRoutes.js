@@ -6,7 +6,7 @@ const adminRoute = express()
 
 adminRoute.get("/users",usersList)
 adminRoute.post("/login",adminLogin)
-adminRoute.post("/userBlockOrUnblock",userBlockOrUnblock)
+adminRoute.put("/userBlockOrUnblock/:id",userBlockOrUnblock)
 
 
 

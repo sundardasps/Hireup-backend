@@ -22,7 +22,7 @@ import adminRoute from './routes/adminRoutes.js'
 
 const corsOptions = {
   origin: "http://localhost:5173",
-  methos: "GET,POST",
+  methos: ["GET,POST","PUT"]
 };
 app.use(cors(corsOptions));
 
