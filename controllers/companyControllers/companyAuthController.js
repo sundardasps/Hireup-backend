@@ -4,13 +4,9 @@ import authTokenDb from "../../models/tokenModel.js";
 import crypto from "crypto";
 import sendMail from "../../utils/sendMails.js";
 import jwt from "jsonwebtoken";
+import { passwordHasher, tokenJwt } from "../../utils/authTokens.js";
 
-const passwordHasher = (password) => {
-  const pass = bcrypt.hash(password, 10);
-  return pass;
-};
-
-//--------------------------------------------- Register ----------------------------------------//
+//---------------------------------------- Register ----------------------------------------//
 
 export const companyRegister = async (req, res) => {
   try {
@@ -53,7 +49,7 @@ export const companyRegister = async (req, res) => {
   }
 };
 
-//--------------------------------------------- Varification ----------------------------------------//
+//----------------------------------------- Varification ----------------------------------------//
 
 export const companyVarification = async (req, res) => {
   try {
@@ -88,7 +84,7 @@ export const companyVarification = async (req, res) => {
   } catch (error) {}
 };
 
-//--------------------------------------------- Login ----------------------------------------//
+//------------------------------------------ Login ----------------------------------------//
 
 export const companyLogin = async (req, res) => {
   try {
@@ -97,11 +93,8 @@ export const companyLogin = async (req, res) => {
     if (exist) {
       const passwordCheck = await bcrypt.compare(password, exist.password);
       if (passwordCheck) {
-        if (exist.is_varified  
-          || exist.is_google) {
-          const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
-            expiresIn: "30d",
-          });
+        if (exist.is_varified || exist.is_google) {
+          const jwtToken = tokenJwt(exist);
           return res.status(200).json({
             loginData: exist,
             jwtToken,
@@ -140,7 +133,7 @@ export const companyLogin = async (req, res) => {
   }
 };
 
-//--------------------------------------------- Forget password ----------------------------------------//
+//------------------------------------- Forget password ----------------------------------------//
 
 export const companyforgetPassword = async (req, res) => {
   try {
@@ -170,7 +163,7 @@ export const companyforgetPassword = async (req, res) => {
   }
 };
 
-//--------------------------------------------- Forget password ----------------------------------------//
+//------------------------------------------- Forget password ----------------------------------------//
 
 export const companyResetPassword = async (req, res) => {
   try {
@@ -234,9 +227,7 @@ export const googleRegister = async (req, res) => {
         .then(console.log("user registered"));
 
       if (userData) {
-        const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
-          expiresIn: "30d",
-        });
+        const jwtToken = tokenJwt(userData);
         return res.status(200).json({
           created: true,
           message: "Google registration successfull",

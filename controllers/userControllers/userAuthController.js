@@ -6,12 +6,7 @@ import authToken from "../../models/tokenModel.js";
 import crypto from "crypto";
 import authTokenDb from "../../models/tokenModel.js";
 import { log } from "console";
-//---------------------------------------------Password hasher----------------------------------------//
-
-const passwordHasher = (password) => {
-  const pass = bcrypt.hash(password, 10);
-  return pass;
-};
+import { passwordHasher, tokenJwt } from "../../utils/authTokens.js";
 
 //------------------------------------------------User Signin-------------------------------------------//
 
@@ -41,7 +36,7 @@ export const userSignUp = async (req, res) => {
         }).save();
 
         const url = `${process.env.FrontEnd_Url}user/${userData._id}/varification/${emailToken.token}`;
-        console.log(url);
+
         sendMail(email, "Varification mail", url);
         return res.status(200).json({
           created: true,
@@ -64,15 +59,16 @@ export const userLogin = async (req, res) => {
       const passMatch = await bcrypt.compare(password, exist.password);
       if (passMatch) {
         if (exist.is_varified || exist.is_google) {
-          const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
-            expiresIn: "30d",
-          });
-          return res.status(200).json({
-            loginData: exist,
-            loginSuccess: true,
-            message: "Login Successfully",
-            jwtToken,
-          });
+          const jwtToken = tokenJwt(exist);
+          // });
+          if (jwtToken) {
+            return res.status(200).json({
+              loginData: exist,
+              loginSuccess: true,
+              message: "Login Successfully",
+              jwtToken,
+            });
+          }
         } else {
           const emailToken = await new authToken({
             userId: exist._id,
@@ -200,6 +196,9 @@ export const resetPassword = async (req, res) => {
   }
 };
 
+//------------------------------------------User googleregistration----------------------------------------//
+
+
 export const googleRegister = async (req, res) => {
   try {
     const { email, id, name, number } = req.body;
@@ -223,14 +222,15 @@ export const googleRegister = async (req, res) => {
         .then(console.log("user registered"));
 
       if (userData) {
-        const jwtToken = jwt.sign({ exist }, process.env.jwtSecretKey, {
-          expiresIn: "30d",
-        });
-        return res.status(200).json({
-          created: true,
-          message: "Google registration successfull",
-          jwtToken,
-        });
+        const jwtToken = tokenJwt(userData);
+
+        if (jwtToken) {
+          return res.status(200).json({
+            created: true,
+            message: "Google registration successfull",
+            jwtToken,
+          });
+        }
       }
     }
   } catch (error) {

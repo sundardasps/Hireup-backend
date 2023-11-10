@@ -4,6 +4,7 @@ import userDb from "../../models/userModel.js";
 
 export const usersList = async (req, res) => {
   try {
+    console.log(req.params,'hghfgh')
     const usersData = await userDb.find();
     if (usersData) {
       return res.status(200).json({ status: true, usersData });
