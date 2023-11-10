@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema({
   is_google:{
     type:Boolean,
     default:false
+  },
+  is_blocked:{
+    type:Boolean,
+    default:false
   }
 });
 

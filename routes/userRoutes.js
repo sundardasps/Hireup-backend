@@ -18,4 +18,6 @@ userRoute.post("/forgetPassword", forgetPassword);
 userRoute.post("/resetPassword", resetPassword);
 userRoute.post('/userRegisterWithGoole',googleRegister)
 
+
+
 export default userRoute;
