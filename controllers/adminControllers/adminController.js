@@ -1,5 +1,5 @@
 import userDb from "../../models/userModel.js";
-import companyDb from "../../models/companyModel.js"
+import companyDb from "../../models/companyModel.js";
 
 //=====================================Users section====================================//
 
@@ -54,7 +54,6 @@ export const userBlockOrUnblock = async (req, res) => {
   } catch (error) {}
 };
 
-
 //=====================================Companies section====================================//
 
 //----------------------Companies list-------------------//
@@ -63,7 +62,7 @@ export const companiesList = async (req, res) => {
   try {
     const { page, search, filter } = req.query;
     let query = { is_admin: false };
-    
+
     if (filter === "Active") {
       query.is_blocked = false;
     } else if (filter === "Blocked") {
@@ -72,13 +71,13 @@ export const companiesList = async (req, res) => {
     if (search) {
       query.companyName = { $regex: new RegExp(search, "i") };
     }
-    
+
     let limit = 4;
     let skip = (page - 1) * 4;
     const count = await companyDb.find().countDocuments();
     let totalPage = Math.ceil(count / limit);
     const companiesData = await companyDb.find(query).skip(skip).limit(limit);
-    
+
     if (companiesData) {
       return res
         .status(200)
@@ -89,13 +88,12 @@ export const companiesList = async (req, res) => {
   } catch (error) {}
 };
 
-
 //---------------- Companies Block or UnBlock -------------------//
 
 export const companyBlockOrUnblock = async (req, res) => {
   try {
     const id = req.params.id;
-    console.log(id,"=================================================");
+    console.log(id, "=================================================");
     const company = await companyDb.findOne({ _id: id });
     const updated = await companyDb.findByIdAndUpdate(
       { _id: id },
@@ -109,3 +107,17 @@ export const companyBlockOrUnblock = async (req, res) => {
   } catch (error) {}
 };
 
+//=====================================Category section====================================//
+
+//---------------- Adding category title -------------------//
+
+export const addCategoryTitle = async (req,res) =>{
+
+     try{
+            const {title} = req.body.value
+            console.log(req.body);
+     } catch (error) {
+      
+     }
+     
+}
