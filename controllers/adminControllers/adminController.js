@@ -1,51 +1,111 @@
 import userDb from "../../models/userModel.js";
+import companyDb from "../../models/companyModel.js"
 
-//---------------------------------------Users list-------------------------------------//
+//=====================================Users section====================================//
+
+//----------------------Users list-------------------//
 
 export const usersList = async (req, res) => {
   try {
-     const {page ,search,filter} = req.query
+    const { page, search, filter } = req.query;
 
-    let query = {is_admin : false}
-    
-   if(filter === "Active"){
-       query.is_blocked = false
-   }else if(filter === "Blocked"){
-       query.is_blocked = true
-   } if(search){
+    let query = { is_admin: false };
+
+    if (filter === "Active") {
+      query.is_blocked = false;
+    } else if (filter === "Blocked") {
+      query.is_blocked = true;
+    }
+    if (search) {
       query.userName = { $regex: new RegExp(search, "i") };
     }
-   
-     let skip = (page -1 ) * 4
 
-    const count = await userDb.find().countDocuments()
-    const userData = await userDb.find(query).skip(skip).limit(4);
+    let limit = 4;
+    let skip = (page - 1) * 4;
+    const count = await userDb.find().countDocuments();
+    let totalPage = Math.ceil(count / limit);
+    const userData = await userDb.find(query).skip(skip).limit(limit);
 
     if (userData) {
-   console.log(count,page,search,filter);
-      
-      return res.status(200).json({ status: true, data:userData, count});
+      return res
+        .status(200)
+        .json({ status: true, data: userData, count, totalPage });
     } else {
       res.json({ message: "Network error" });
     }
   } catch (error) {}
 };
 
-//----------------------------------- Users Block or UnBlock ----------------------------------//
+//---------------- Users Block or UnBlock -------------------//
 
 export const userBlockOrUnblock = async (req, res) => {
   try {
-    const  id  = req.params.id;
-      console.log(id,"======================");
+    const id = req.params.id;
     const user = await userDb.findOne({ _id: id });
-   const updated = await userDb.findByIdAndUpdate(
+    const updated = await userDb.findByIdAndUpdate(
       { _id: id },
       { $set: { is_blocked: !user.is_blocked } }
     );
-    if(updated){
-      return res.status(200).json({updated:true})
-    }else{
-      return res.status(200).json({updated:false})
+    if (updated) {
+      return res.status(200).json({ updated: true });
+    } else {
+      return res.status(200).json({ updated: false });
     }
   } catch (error) {}
 };
+
+
+//=====================================Companies section====================================//
+
+//----------------------Companies list-------------------//
+
+export const companiesList = async (req, res) => {
+  try {
+    const { page, search, filter } = req.query;
+    let query = { is_admin: false };
+    
+    if (filter === "Active") {
+      query.is_blocked = false;
+    } else if (filter === "Blocked") {
+      query.is_blocked = true;
+    }
+    if (search) {
+      query.companyName = { $regex: new RegExp(search, "i") };
+    }
+    
+    let limit = 4;
+    let skip = (page - 1) * 4;
+    const count = await companyDb.find().countDocuments();
+    let totalPage = Math.ceil(count / limit);
+    const companiesData = await companyDb.find(query).skip(skip).limit(limit);
+    
+    if (companiesData) {
+      return res
+        .status(200)
+        .json({ status: true, data: companiesData, count, totalPage });
+    } else {
+      res.json({ message: "Network error" });
+    }
+  } catch (error) {}
+};
+
+
+//---------------- Companies Block or UnBlock -------------------//
+
+export const companyBlockOrUnblock = async (req, res) => {
+  try {
+    const id = req.params.id;
+    console.log(id,"=================================================");
+    const company = await companyDb.findOne({ _id: id });
+    const updated = await companyDb.findByIdAndUpdate(
+      { _id: id },
+      { $set: { is_blocked: !company.is_blocked } }
+    );
+    if (updated) {
+      return res.status(200).json({ updated: true });
+    } else {
+      return res.status(200).json({ updated: false });
+    }
+  } catch (error) {}
+};
+

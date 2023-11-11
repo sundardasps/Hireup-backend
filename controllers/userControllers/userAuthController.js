@@ -214,7 +214,7 @@ export const googleRegister = async (req, res) => {
         email,
         number: number || "000000000000",
         password: hashedpass,
-        is_google: true,
+        is_google:true,
         is_varified: true,
       });
       const userData = await googleUser
