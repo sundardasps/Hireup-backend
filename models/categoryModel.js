@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 
 const categories = new mongoose.Schema({
-  tile: {
+  title: {
     type: String,
     require: true,
   },
   category: {
-    type: String,
-    require: true,
+    type: Array,
+    
   },
   is_active: {
     type: Boolean,

@@ -1,5 +1,6 @@
 import userDb from "../../models/userModel.js";
 import companyDb from "../../models/companyModel.js";
+import categoryDb from "../../models/categoryModel.js";
 
 //=====================================Users section====================================//
 
@@ -111,13 +112,27 @@ export const companyBlockOrUnblock = async (req, res) => {
 
 //---------------- Adding category title -------------------//
 
-export const addCategoryTitle = async (req,res) =>{
+export const addCategoryTitle = async (req, res) => {
+  try {
+    const { title } = req.body;
+    const exist = await categoryDb.findOne({ title: title });
+    if (exist) {
+      return res
+        .status(200)
+        .json({ created: false, message: "This title already added!" });
+    } else {
+      const categoryTitle = new categoryDb({
+        title,
+      });
+      const savedTitle = await categoryTitle.save();
+      if (savedTitle) {
+        return res
+          .status(200)
+          .json({ created: true, message: "Title added successfully" });
+      }
+    }
+  } catch (error) {}
+};
 
-     try{
-            const {title} = req.body.value
-            console.log(req.body);
-     } catch (error) {
-      
-     }
-     
-}
+
+
