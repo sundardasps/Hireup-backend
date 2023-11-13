@@ -208,3 +208,24 @@ export const categoryList = async (req, res) => {
     }
   } catch (error) {}
 };
+
+//---------------- Category block or unblock -------------------//
+
+export const titleBlockorUnblock = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const exist = await categoryDb.findOne({ _id: id });
+    if (exist) {
+      const updatedData = await categoryDb.findOneAndUpdate(
+        { _id: id },
+        { $set: { is_active: !exist.is_active } }
+      );
+
+      if (updatedData) {
+        return res.status(200).json({ updated: true });
+      }else{
+        return res.status(200).json({ updated: false , message:"Somthing error" });
+      }
+    }
+  } catch (error) {}
+};

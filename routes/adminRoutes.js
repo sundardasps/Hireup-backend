@@ -9,6 +9,7 @@ import {
   getCategoryTitle,
   addCategory,
   categoryList,
+  titleBlockorUnblock
 } from "../controllers/adminControllers/adminController.js";
 
 const adminRoute = express();
@@ -28,5 +29,6 @@ adminRoute.get("/categoryData",categoryList);
 adminRoute.post("/addTile", addCategoryTitle);
 adminRoute.get("/getTitle", getCategoryTitle);
 adminRoute.post("/addCategory", addCategory);
+adminRoute.put('/catgoryBlockOrUnblock/:id',titleBlockorUnblock)
 
 export default adminRoute;
