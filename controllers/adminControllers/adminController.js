@@ -134,5 +134,77 @@ export const addCategoryTitle = async (req, res) => {
   } catch (error) {}
 };
 
+//---------------- Getting category title -------------------//
 
+export const getCategoryTitle = async (req, res) => {
+  try {
+    const titlesData = await categoryDb.find();
+    if (titlesData) {
+      return res
+        .status(200)
+        .json({ titlesData, dataFetched: true, message: "Data fetched!" });
+    } else {
+      return res.status(200).json({
+        titlesData: [],
+        dataFetched: false,
+        message: "Error while fetching data",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
+//---------------- Adding category  -------------------//
+
+export const addCategory = async (req, res) => {
+  try {
+    const { category, title } = req.body;
+    const data1 = await categoryDb.findOne({ category: { $in: [category] } });
+    if (data1) {
+      return res.json({
+        created: false,
+        message: "The category has already added",
+      });
+    } else {
+      const data = await categoryDb.findByIdAndUpdate(
+        { _id: title },
+        { $push: { category: category } }
+      );
+      if (data) {
+        return res
+          .status(200)
+          .json({ created: true, message: "Category added successfully" });
+      }
+    }
+  } catch (error) {}
+};
+
+//---------------- getting category title list -------------------//
+
+export const categoryList = async (req, res) => {
+  try {
+    const { page, search, filter } = req.query;
+    let query = { is_active: true };
+    if (filter === "Active") {
+      query.is_active = true;
+    } else if (filter === "Blocked") {
+      query.is_active = false;
+    }
+    if (search) {
+      query.title = { $regex: new RegExp(search, "i") };
+    }
+    let limit = 4;
+    let skip = (page - 1) * 4;
+    const count = await categoryDb.find().countDocuments();
+    let totalPage = Math.ceil(count / limit);
+    const categoryData = await categoryDb.find(query).skip(skip).limit(limit);
+    if (categoryData) {
+      return res
+        .status(200)
+        .json({ status: true, data: categoryData, count, totalPage });
+    } else {
+      res.json({ message: "Network error" });
+    }
+  } catch (error) {}
+};
