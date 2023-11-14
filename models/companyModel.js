@@ -29,14 +29,38 @@ const companySchema = new mongoose.Schema({
     type: String,
     default: false,
   },
-  is_google:{
-    type:Boolean,
-    default:false
+  is_google: {
+    type: Boolean,
+    default: false,
   },
-  is_blocked:{
-    type:Boolean,
-    default:false
-  }
+  is_blocked: {
+    type: Boolean,
+    default: false,
+  },
+  image: {
+    type: String,
+    default: "",
+  },
+  location: {
+    type: String,
+    default: "",
+  },
+  company_roles: {
+    type: Array,
+    default: [],
+  },
+  gst_number: {
+    type: String,
+    defult: "",
+  },
+  address: {
+    type: String,
+    default: "",
+  },
+  is_completed: {
+    type: String,
+    default: false,
+  },
 });
 
 const company = mongoose.model("company", companySchema);
