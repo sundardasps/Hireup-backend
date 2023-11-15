@@ -1,6 +1,5 @@
 import multer from 'multer'
-const storege = multer.diskStorage({})
-
-const upload = multer({storege})
-
+const storage = multer.diskStorage({})
+const upload = multer({storage})
 export default upload
+
