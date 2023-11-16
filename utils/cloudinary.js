@@ -7,7 +7,7 @@ config();
 cloudinary.config({
   cloud_name:process.env.cloudinary_NAME,
   api_key:process.env.cloudinary_Api_KEY,
-  api_secret: process.env.cloudinary_Api_SECRET,
+  api_secret:process.env.cloudinary_Api_SECRET,
   secure: true
 });
 

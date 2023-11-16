@@ -46,7 +46,7 @@ const companySchema = new mongoose.Schema({
     default: "",
   },
   company_roles: {
-    type: Array,
+    type: String,
     default: "",
   },
   gst_number: {
@@ -62,7 +62,7 @@ const companySchema = new mongoose.Schema({
     default:""
   },
   is_completed: {
-    type: String,
+    type: Boolean,
     default: false,
   },
 });
