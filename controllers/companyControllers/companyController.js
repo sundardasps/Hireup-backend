@@ -36,3 +36,5 @@ export const addcompanyFullDetails = async (req, res) => {
 
   } catch (error) {}
 };
+
+

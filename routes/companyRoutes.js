@@ -8,7 +8,10 @@ import {
   googleRegister,
 } from "../controllers/companyControllers/companyAuthController.js";
 import  {addcompanyFullDetails} from '../controllers/companyControllers/companyController.js'
+
+import {companyAuth} from '../middleWares/auth.js'
 import upload from "../middleWares/multer.js";
+
 const companyRoute = express();
 
 companyRoute.post("/register", companyRegister);
