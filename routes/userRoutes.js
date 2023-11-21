@@ -13,12 +13,12 @@ import {userAuth}  from '../middleWares/auth.js'
 const userRoute = express();
 
 userRoute.post("/sigUp", userSignUp);
-userRoute.post("/login",userAuth,userLogin);
+userRoute.post("/login",userLogin);
 userRoute.post("/varification", userVarification);
 userRoute.post("/forgetPassword", forgetPassword);
 userRoute.post("/resetPassword", resetPassword);
 userRoute.post("/userRegisterWithGoole", googleRegister);
 
-userRoute.get("/categoryDataForUser", getCategory);
+userRoute.get("/categoryDataForUser",userAuth,getCategory);
 
 export default userRoute;

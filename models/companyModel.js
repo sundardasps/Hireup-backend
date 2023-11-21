@@ -65,6 +65,10 @@ const companySchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  jobs:{
+    type:Array,
+    default:[]
+  }
 });
 
 const company = mongoose.model("company", companySchema);

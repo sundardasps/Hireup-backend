@@ -34,8 +34,8 @@ app.use("/admin", adminRoute);
 
 //----------------------------------Server------------------------------//
 
-let port = 5000;
 
-app.listen(port, () => {
-  console.log(`server started running in ${port}`);
+
+app.listen(process.env.port, () => {
+  console.log(`server started running in ${process.env.port}`);
 });
