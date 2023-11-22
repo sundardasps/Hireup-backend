@@ -6,7 +6,6 @@ import { set } from "mongoose";
 
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
-
 export const addcompanyFullDetails = async (req, res) => {
   try {
     const {
@@ -49,7 +48,6 @@ export const addcompanyFullDetails = async (req, res) => {
 
 //------------------------------------------ Company Post adding  ----------------------------------------//
 
-
 export const companyAddPost = async (req, res) => {
   try {
     const {
@@ -81,16 +79,14 @@ export const companyAddPost = async (req, res) => {
         { $push: { jobs: stringJobId } }
       );
       if (data) {
-       return  res
+        return res
           .status(200)
           .json({ created: true, message: "Post saved successfully" });
       } else {
-      return  res
-          .status(200)
-          .json({
-            created: false,
-            message: "Somthing error while saving jobs",
-          });
+        return res.status(200).json({
+          created: false,
+          message: "Somthing error while saving jobs",
+        });
       }
     }
   } catch (error) {
@@ -98,15 +94,13 @@ export const companyAddPost = async (req, res) => {
   }
 };
 
-
 //------------------------------------------ Company get posts ----------------------------------------//
-
 
 export const getPostCompany = async (req, res) => {
   try {
     const { search, filter, page } = req.query;
 
-    let query = {is_active: true };
+    let query = { is_active: true };
     if (filter === "Active") {
       query.is_active = true;
     } else if (filter === "Expired") {
@@ -121,18 +115,27 @@ export const getPostCompany = async (req, res) => {
 
     const companyData = await companyDb.findOne({ _id: req.headers.companyId });
     const jobs = companyData.jobs;
-    
+
     const count = await jobDb.find().countDocuments();
     let totalPage = Math.ceil(count / limit);
-    const Fulldetails = await jobDb.find({ _id: { $in: jobs }, ...query }).skip(skip).limit(limit).sort({ createdAt: -1 })
-
-
-
+    const Fulldetails = await jobDb
+      .find({ _id: { $in: jobs }, ...query })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
     if (Fulldetails.length > 0) {
-     return  res.status(200).json({ fetched: true, data:Fulldetails,totalPage,count,companyData });
+      return res.status(200).json({
+        fetched: true,
+        data: Fulldetails,
+        totalPage,
+        count,
+        companyData,
+      });
     } else {
-      res.status(200).json({ fetched: false,data:[],totalPage,count,companyData });
+      res
+        .status(200)
+        .json({ fetched: false, data: [], totalPage, count, companyData });
     }
   } catch (error) {
     console.error(error);
@@ -140,3 +143,26 @@ export const getPostCompany = async (req, res) => {
   }
 };
 
+//------------------------------------------ Company get postsfulldetails ----------------------------------------//
+
+export const jobFullDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const jobDetails = await jobDb.findOne({ _id: id });
+    console.log(jobDetails);
+
+    if (jobDetails) {
+      return res
+        .status(200)
+        .json({ fetched: true, jobDetails, message: "Details fetched!" });
+      } else {
+      return res.json({
+        fetched: false,
+        jobDetails,
+        message: "Something error while fetching data",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
