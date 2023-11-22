@@ -30,8 +30,16 @@ const post = mongoose.Schema({
     type: String,
     require: true,
   },
+  is_active:{
+    type:Boolean,
+    default:true
+  },
+  createdAt:{
+    type:Date,
+    default:new Date()
+  }
 });
 
-const companyPost = mongoose.model("jobs", post);
+const jobs = mongoose.model("jobs", post);
 
-export default companyPost;
+export default jobs;

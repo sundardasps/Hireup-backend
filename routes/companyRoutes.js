@@ -7,7 +7,7 @@ import {
   companyResetPassword,
   googleRegister,
 } from "../controllers/companyControllers/companyAuthController.js";
-import  {addcompanyFullDetails,companyAddPost} from '../controllers/companyControllers/companyController.js'
+import  {addcompanyFullDetails,companyAddPost,getPostCompany} from '../controllers/companyControllers/companyController.js'
 
 import {companyAuth} from '../middleWares/auth.js'
 import upload from "../middleWares/multer.js";
@@ -22,6 +22,8 @@ companyRoute.post("/resetPassword", companyResetPassword);
 companyRoute.post("/companyRegisterWithGoole", googleRegister);
 companyRoute.post("/companyFullDetails/:id",upload.single("image"),addcompanyFullDetails);
 companyRoute.post("/addPost",companyAuth,companyAddPost);
+companyRoute.get("/getPost",companyAuth,getPostCompany);
+
 
 
 
