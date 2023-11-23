@@ -14,7 +14,8 @@ import {
   jobFullDetails,
   editeProfile,
   getCompanyProfile,
-  editeProfileImage
+  editeProfileImage,
+  editPost,
 } from "../controllers/companyControllers/companyController.js";
 
 import { companyAuth } from "../middleWares/auth.js";
@@ -29,7 +30,10 @@ companyRoute.post("/forgetPassword", companyforgetPassword);
 companyRoute.post("/resetPassword", companyResetPassword);
 companyRoute.post("/companyRegisterWithGoole", googleRegister);
 companyRoute.post("/companyFullDetails/:id",upload.single("image"),addcompanyFullDetails);
+
 companyRoute.post("/addPost", companyAuth, companyAddPost);
+companyRoute.put("/editPost/:id", companyAuth,editPost);
+
 companyRoute.get("/getPost", companyAuth, getPostCompany);
 companyRoute.get("/postDetails/:id", companyAuth, jobFullDetails);
 companyRoute.post("/editProfile", companyAuth, editeProfile);

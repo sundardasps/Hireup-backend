@@ -150,7 +150,7 @@ export const jobFullDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const jobDetails = await jobDb.findOne({ _id: id });
-    console.log(jobDetails);
+   
 
     if (jobDetails) {
       return res
@@ -172,7 +172,7 @@ export const jobFullDetails = async (req, res) => {
 
 export const editeProfile = async (req, res) => {
   try {
-    console.log(req.body);
+    
     const {
       companyName,
       email,
@@ -237,7 +237,6 @@ export const editeProfileImage = async (req,res) =>{
           
           const companyData = await companyDb.findOne({_id:req.headers.companyId})
           const prevImage = companyData.image
-          console.log(prevImage);
           const match = prevImage.match(/\/v\d+\/(.+?)\./);
           const publicId = match ? match[1] : null;
 
@@ -264,3 +263,32 @@ export const editeProfileImage = async (req,res) =>{
        console.log(error);
      }
 }
+
+//------------------------------------------ Company Post edit ----------------------------------------//
+
+export const editPost = async (req,res) =>{
+
+
+  try {
+      const {jobPosition,skills,experience,jobType,responsibilities,endTime,salery} = req.body
+    const updated = await jobDb.findOneAndUpdate({_id:req.params.id},{$set:{
+      job_title: jobPosition,
+      required_skills: skills,
+      experience: experience,
+      job_type: jobType,
+      responsibilities: responsibilities,
+      end_time: endTime,
+      salery: salery,
+    }})
+    if(updated){
+      return res.status(200).json({updated:true,message:"Post updated successfully!"})
+    }else{
+      return res.status(200).json({updated:false,message:"Something error while updation!"})
+    }
+
+  } catch (error) {
+    
+  }
+
+}
+
