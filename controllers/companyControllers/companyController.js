@@ -2,7 +2,7 @@ import companyDb from "../../models/companyModel.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import { tokenJwt } from "../../utils/authTokens.js";
 import jobDb from "../../models/companyPostModel.js";
-import cloudinary  from "cloudinary/lib/cloudinary.js";
+import cloudinary from "cloudinary/lib/cloudinary.js";
 import { set } from "mongoose";
 
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
@@ -125,6 +125,8 @@ export const getPostCompany = async (req, res) => {
       .limit(limit)
       .sort({ createdAt: -1 });
 
+ 
+
     if (Fulldetails.length > 0) {
       return res.status(200).json({
         fetched: true,
@@ -150,7 +152,6 @@ export const jobFullDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const jobDetails = await jobDb.findOne({ _id: id });
-   
 
     if (jobDetails) {
       return res
@@ -172,7 +173,6 @@ export const jobFullDetails = async (req, res) => {
 
 export const editeProfile = async (req, res) => {
   try {
-    
     const {
       companyName,
       email,
@@ -214,81 +214,90 @@ export const editeProfile = async (req, res) => {
 
 //------------------------------------------ Company profile ----------------------------------------//
 
-export const getCompanyProfile = async  (req,res) =>{
-
-     try {
-        const exist  = await companyDb.findOne({_id:req.headers.companyId})
-        if(exist){
-           return res.status(200).json({fetched:true ,exist})
-        }else{
-          return res.json({ fetched:false, exist})
-        }
-
-     } catch (error) {
-       console.log(error);
-     }
-}
+export const getCompanyProfile = async (req, res) => {
+  try {
+    const exist = await companyDb.findOne({ _id: req.headers.companyId });
+    if (exist) {
+      return res.status(200).json({ fetched: true, exist });
+    } else {
+      return res.json({ fetched: false, exist });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 //------------------------------------------ Company profile image edit ----------------------------------------//
 
-export const editeProfileImage = async (req,res) =>{
+export const editeProfileImage = async (req, res) => {
+  try {
+    const companyData = await companyDb.findOne({ _id: req.headers.companyId });
+    const prevImage = companyData.image;
+    const match = prevImage.match(/\/v\d+\/(.+?)\./);
+    const publicId = match ? match[1] : null;
 
-     try {
-          
-          const companyData = await companyDb.findOne({_id:req.headers.companyId})
-          const prevImage = companyData.image
-          const match = prevImage.match(/\/v\d+\/(.+?)\./);
-          const publicId = match ? match[1] : null;
+    const img = req.file.path;
+    const uploadedImage = await uploadToCloudinary(img, "companyDp");
+    const updateData = await companyDb.findOneAndUpdate({
+      image: uploadedImage.url,
+    });
 
-          const img = req.file.path;
-          const uploadedImage = await uploadToCloudinary(img, "companyDp")
-          ;
-          const updateData = await companyDb.findOneAndUpdate({
-             image:uploadedImage.url
-          })
-          
-          if(updateData){
-            cloudinary.v2.uploader.destroy(publicId).then((res)=>console.log("prev image deleted"))
-            
-            return res.status(200).json({updated:true,message:"Image updated successfully!"})
-            
-          }else{
-            return res.status(200).json({updated:false,message:"somthing error while updating image!"})
+    if (updateData) {
+      cloudinary.v2.uploader
+        .destroy(publicId)
+        .then((res) => console.log("prev image deleted"));
 
-          }
-          
-
-
-     } catch (error) {
-       console.log(error);
-     }
-}
+      return res
+        .status(200)
+        .json({ updated: true, message: "Image updated successfully!" });
+    } else {
+      return res
+        .status(200)
+        .json({
+          updated: false,
+          message: "somthing error while updating image!",
+        });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 //------------------------------------------ Company Post edit ----------------------------------------//
 
-export const editPost = async (req,res) =>{
-
-
+export const editPost = async (req, res) => {
   try {
-      const {jobPosition,skills,experience,jobType,responsibilities,endTime,salery} = req.body
-    const updated = await jobDb.findOneAndUpdate({_id:req.params.id},{$set:{
-      job_title: jobPosition,
-      required_skills: skills,
-      experience: experience,
-      job_type: jobType,
-      responsibilities: responsibilities,
-      end_time: endTime,
-      salery: salery,
-    }})
-    if(updated){
-      return res.status(200).json({updated:true,message:"Post updated successfully!"})
-    }else{
-      return res.status(200).json({updated:false,message:"Something error while updation!"})
+    const {
+      jobPosition,
+      skills,
+      experience,
+      jobType,
+      responsibilities,
+      endTime,
+      salery,
+    } = req.body;
+    const updated = await jobDb.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        $set: {
+          job_title: jobPosition,
+          required_skills: skills,
+          experience: experience,
+          job_type: jobType,
+          responsibilities: responsibilities,
+          end_time: endTime,
+          salery: salery,
+        },
+      }
+    );
+    if (updated) {
+      return res
+        .status(200)
+        .json({ updated: true, message: "Post updated successfully!" });
+    } else {
+      return res
+        .status(200)
+        .json({ updated: false, message: "Something error while updation!" });
     }
-
-  } catch (error) {
-    
-  }
-
-}
-
+  } catch (error) {}
+};

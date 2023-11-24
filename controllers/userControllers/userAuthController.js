@@ -146,7 +146,6 @@ export const forgetPassword = async (req, res) => {
           token: crypto.randomBytes(32).toString("hex"),
         }).save();
         const url = `${process.env.FrontEnd_Url}user/${exist._id}/resetPassword/${emailToken.token}`;
-        console.log(url);
         sendMail(exist.email, "Reset password", url);
         return res.status(200).json({
           created: true,

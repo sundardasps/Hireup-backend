@@ -16,7 +16,6 @@ export const userAuth = async (req, res, next) => {
       const decode = jwt.verify(token, process.env.jwtSecretKey);
       const exist = await userDb.findOne({_id:decode.exist._id})
       if (exist) {
-        console.log(exist,"=======");
         if (exist.is_blocked === false) {
           req.headers.userId = exist._id;
           next();

@@ -1,6 +1,7 @@
 import userDb from "../../models/userModel.js";
 import companyDb from "../../models/companyModel.js";
 import categoryDb from "../../models/categoryModel.js";
+import { query } from "express";
 
 //=====================================Users section====================================//
 
@@ -94,7 +95,6 @@ export const companiesList = async (req, res) => {
 export const companyBlockOrUnblock = async (req, res) => {
   try {
     const id = req.params.id;
-    console.log(id, "=================================================");
     const company = await companyDb.findOne({ _id: id });
     const updated = await companyDb.findByIdAndUpdate(
       { _id: id },
@@ -115,11 +115,12 @@ export const companyBlockOrUnblock = async (req, res) => {
 export const addCategoryTitle = async (req, res) => {
   try {
     const { title } = req.body;
-    const exist = await categoryDb.findOne({ title: title });
+
+    const exist = await categoryDb.findOne({
+      title: { $regex: new RegExp(`^${title}$`, "i") },
+    });
     if (exist) {
-      return res
-        .status(200)
-        .json({ created: false, message: "This title already added!" });
+      return res.json({ created: false, message: "This title already added!" });
     } else {
       const categoryTitle = new categoryDb({
         title,
@@ -223,8 +224,10 @@ export const titleBlockorUnblock = async (req, res) => {
 
       if (updatedData) {
         return res.status(200).json({ updated: true });
-      }else{
-        return res.status(200).json({ updated: false , message:"Somthing error" });
+      } else {
+        return res
+          .status(200)
+          .json({ updated: false, message: "Somthing error" });
       }
     }
   } catch (error) {}
