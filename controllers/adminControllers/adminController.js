@@ -195,6 +195,7 @@ export const categoryList = async (req, res) => {
     if (search) {
       query.title = { $regex: new RegExp(search, "i") };
     }
+
     let limit = 4;
     let skip = (page - 1) * 4;
     const count = await categoryDb.find().countDocuments();

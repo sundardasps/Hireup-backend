@@ -60,7 +60,8 @@ export const companyAddPost = async (req, res) => {
       endTime,
       salery,
     } = req.body;
-    const id = req.headers.comapnyId;
+    const id = req.headers.companyId;
+    const company = await companyDb.findOne({ _id: id });
 
     const saveData = await jobDb({
       job_title: jobPosition,
@@ -70,15 +71,21 @@ export const companyAddPost = async (req, res) => {
       responsibilities: responsibilities,
       end_time: endTime,
       salery: salery,
+      companyName: company.companyName,
+      companyImage: company.image,
+      companyLocation:company.location,
+      
     });
     const companyData = await saveData.save();
     if (companyData) {
       const jobId = companyData._id;
       const stringJobId = jobId.toString();
+
       const data = await companyDb.findOneAndUpdate(
-        { id: id },
+        { _id: id },
         { $push: { jobs: stringJobId } }
       );
+
       if (data) {
         return res
           .status(200)
@@ -124,8 +131,6 @@ export const getPostCompany = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
-
- 
 
     if (Fulldetails.length > 0) {
       return res.status(200).json({
@@ -251,12 +256,10 @@ export const editeProfileImage = async (req, res) => {
         .status(200)
         .json({ updated: true, message: "Image updated successfully!" });
     } else {
-      return res
-        .status(200)
-        .json({
-          updated: false,
-          message: "somthing error while updating image!",
-        });
+      return res.status(200).json({
+        updated: false,
+        message: "somthing error while updating image!",
+      });
     }
   } catch (error) {
     console.log(error);

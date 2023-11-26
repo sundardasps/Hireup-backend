@@ -31,7 +31,7 @@ companyRoute.post("/resetPassword", companyResetPassword);
 companyRoute.post("/companyRegisterWithGoole", googleRegister);
 companyRoute.post("/companyFullDetails/:id",upload.single("image"),addcompanyFullDetails);
 
-companyRoute.post("/addPost", companyAuth, companyAddPost);
+companyRoute.post("/addPost", companyAuth,companyAddPost);
 companyRoute.put("/editPost/:id", companyAuth,editPost);
 
 companyRoute.get("/getPost", companyAuth, getPostCompany);

@@ -37,6 +37,22 @@ const userSchema = new mongoose.Schema({
   is_blocked:{
     type:Boolean,
     default:false
+  },
+  userTitle:{
+    type:String,
+    default:"Add a title"
+  },
+  userDp:{
+    type:String,
+    default:"/frontend/public/user.png"
+  },
+  userCoverDp:{
+    type:String,
+    default:""
+  },
+  place:{
+    type:String,
+    default:"Share where I live"
   }
 });
 

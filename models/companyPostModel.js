@@ -37,7 +37,20 @@ const post = mongoose.Schema({
   createdAt:{
     type:Date,
     default:new Date()
+  },
+  companyName:{
+    type:String,
+    require:true
+  },
+  companyImage:{
+    type:String,
+    require:true
+  },
+  companyLocation:{
+    type:String,
+    require:true
   }
+
 });
 
 const jobs = mongoose.model("jobs", post);
