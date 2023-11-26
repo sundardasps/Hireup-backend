@@ -243,7 +243,7 @@ export const editeProfileImage = async (req, res) => {
 
     const img = req.file.path;
     const uploadedImage = await uploadToCloudinary(img, "companyDp");
-    const updateData = await companyDb.findOneAndUpdate({
+    const updateData = await companyDb.findOneAndUpdate({_id: req.headers.companyId},{
       image: uploadedImage.url,
     });
 

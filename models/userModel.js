@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
   },
   userDp:{
     type:String,
-    default:"/frontend/public/user.png"
+    default:""
   },
   userCoverDp:{
     type:String,

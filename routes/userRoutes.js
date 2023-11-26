@@ -7,9 +7,9 @@ import {
   resetPassword,
   googleRegister,
 } from "../controllers/userControllers/userAuthController.js";
-import { getAllJobs, getCategory ,getProfile,editProfile} from "../controllers/userControllers/userController.js";
+import { getAllJobs, getCategory ,getProfile,editProfile,editUserDp,editUserBgImg} from "../controllers/userControllers/userController.js";
 import {userAuth}  from '../middleWares/auth.js'
-
+import upload from '../middleWares/multer.js'
 const userRoute = express();
 
 userRoute.post("/sigUp", userSignUp);
@@ -24,6 +24,10 @@ userRoute.get("/getAllJobs",userAuth,getAllJobs);
 
 userRoute.get("/profile",userAuth,getProfile)
 userRoute.put("/EditProfile",userAuth,editProfile)
+userRoute.post("/EditDp",userAuth,upload.single("image"),editUserDp)
+userRoute.post("/EditBgImg",userAuth,upload.single("image"),editUserBgImg)
+
+
 
 
 

@@ -1,7 +1,8 @@
 import userDb from "../../models/userModel.js";
 import categoryDb from "../../models/categoryModel.js";
 import jobDb from "../../models/companyPostModel.js";
-
+import cloudinary from "cloudinary/lib/cloudinary.js";
+import { uploadToCloudinary } from "../../utils/cloudinary.js";
 //--------------------------------------------------Get cateogry----------------------------------------//
 
 export const getCategory = async (req, res) => {
@@ -47,7 +48,6 @@ export const getAllJobs = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const exist = await userDb.findOne({ _id: req.headers.userId });
-    console.log(exist);
     if (exist) {
       return res.status(200).json({ fetched: true, exist });
     } else {
@@ -62,7 +62,6 @@ export const getProfile = async (req, res) => {
 
 export const editProfile = async (req, res) => {
   try {
-    console.log(req.headers.userId);
     const { name, title, place, email, number } = req.body;
     const updated = await userDb.findOneAndUpdate(
       { _id: req.headers.userId },
@@ -85,6 +84,78 @@ export const editProfile = async (req, res) => {
           message:
             "An error occurred during the update process. Please try again.",
         });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+//--------------------------------------------------Edit Dp----------------------------------------//
+
+export const editUserDp = async (req, res) => {
+  try {
+    const userData = await userDb.findOne({ _id: req.headers.userId });
+    
+    const prevImage = userData.userDp;
+    const match = prevImage.match(/\/v\d+\/(.+?)\./);
+    const publicId = match ? match[1] : null;
+    
+    const img = req.file.path;
+    const uploadedImage = await uploadToCloudinary(img, "userDp");
+    console.log(uploadedImage,"[[[");
+
+    const updateData = await userDb.findOneAndUpdate({_id:req.headers.userId},{
+     $set:{ userDp: uploadedImage.url,}
+    });
+
+    if (updateData) {
+        cloudinary.v2.uploader
+        .destroy(publicId)
+        .then((res) => console.log("prev image deleted"));
+      return res
+        .status(200)
+        .json({ updated: true, message: "Image updated successfully!" });
+    } else {
+      return res.status(200).json({
+        updated: false,
+        message: "somthing error while updating image!",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+//--------------------------------------------------Edit Bgimage----------------------------------------//
+
+export const editUserBgImg = async (req, res) => {
+  try {
+    const userData = await userDb.findOne({ _id: req.headers.userId });
+    const prevImage = userData.userCoverDp;
+    const match = prevImage.match(/\/v\d+\/(.+?)\./);
+    const publicId = match ? match[1] : null;
+    
+    const img = req.file.path;
+    const uploadedImage = await uploadToCloudinary(img, "userBgimg");
+
+    const updateData = await userDb.findOneAndUpdate({_id:req.headers.userId},{
+     $set:{ userCoverDp: uploadedImage.url,}
+    });
+
+    if (updateData) {
+        cloudinary.v2.uploader
+        .destroy(publicId)
+        .then((res) => console.log("prev image deleted"));
+      return res
+        .status(200)
+        .json({ updated: true, message: "Image updated successfully!" });
+    } else {
+      return res.status(200).json({
+        updated: false,
+        message: "somthing error while updating image!",
+      });
     }
   } catch (error) {
     console.log(error);
