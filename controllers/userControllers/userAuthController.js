@@ -55,12 +55,17 @@ export const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
     const exist = await userDb.findOne({ email: email });
-    if (exist) {
+    if (exist){
+      if(exist.is_blocked === true){
+        res.json({
+          message: "User where blocked by admin!.",
+        });
+      }else{
       const passMatch = await bcrypt.compare(password, exist.password);
       if (passMatch) {
         if (exist.is_varified || exist.is_google) {
           const jwtToken = tokenJwt(exist);
-          // });
+          
           if (jwtToken) {
             return res.status(200).json({
               loginData: exist,
@@ -88,6 +93,8 @@ export const userLogin = async (req, res) => {
           message: "The password you entered is incorrect.",
         });
       }
+    }
+
     } else {
       res.json({ message: "The entered email addresses do not match." });
     }

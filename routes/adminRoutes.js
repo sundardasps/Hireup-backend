@@ -11,7 +11,7 @@ import {
   categoryList,
   titleBlockorUnblock
 } from "../controllers/adminControllers/adminController.js";
-
+import { adminAuth } from "../middleWares/auth.js";
 const adminRoute = express();
 adminRoute.post("/login", adminLogin);
 
@@ -22,7 +22,7 @@ adminRoute.put("/userBlockOrUnblock/:id", userBlockOrUnblock);
 
 //-------------------------------------------Companies section-------------------------------------//
 adminRoute.get("/companies", companiesList);
-adminRoute.put("/companyBlockOrUnblock/:id", companyBlockOrUnblock);
+adminRoute.post("/companyBlockOrUnblock/:id",adminAuth,companyBlockOrUnblock);
 
 //-------------------------------------------Category section-------------------------------------//
 adminRoute.get("/categoryData",categoryList);

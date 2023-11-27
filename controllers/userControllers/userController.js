@@ -48,6 +48,7 @@ export const getAllJobs = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const exist = await userDb.findOne({ _id: req.headers.userId });
+    console.log(exist);
     if (exist) {
       return res.status(200).json({ fetched: true, exist });
     } else {
@@ -62,55 +63,52 @@ export const getProfile = async (req, res) => {
 
 export const editProfile = async (req, res) => {
   try {
-    const { name, title, place, email, number } = req.body;
+    const { name, title, place, number } = req.body;
     const updated = await userDb.findOneAndUpdate(
       { _id: req.headers.userId },
-      { $set: { userName: name, email, number, userTitle: title, place } }
+      { $set: { userName: name, number, userTitle: title, place } }
     );
     if (updated) {
-      return res
-        .status(200)
-        .json({
-          updated: true,
-          updated,
-          message: "Details updated successsfully!",
-        });
+      return res.status(200).json({
+        updated: true,
+        updated,
+        message: "Details updated successsfully!",
+      });
     } else {
-      return res
-        .status(200)
-        .json({
-          updated: false,
-          updated: [],
-          message:
-            "An error occurred during the update process. Please try again.",
-        });
+      return res.status(200).json({
+        updated: false,
+        updated: [],
+        message:
+          "An error occurred during the update process. Please try again.",
+      });
     }
   } catch (error) {
     console.log(error);
   }
 };
 
-
 //--------------------------------------------------Edit Dp----------------------------------------//
 
 export const editUserDp = async (req, res) => {
   try {
     const userData = await userDb.findOne({ _id: req.headers.userId });
-    
+
     const prevImage = userData.userDp;
     const match = prevImage.match(/\/v\d+\/(.+?)\./);
     const publicId = match ? match[1] : null;
-    
+
     const img = req.file.path;
     const uploadedImage = await uploadToCloudinary(img, "userDp");
-    console.log(uploadedImage,"[[[");
 
-    const updateData = await userDb.findOneAndUpdate({_id:req.headers.userId},{
-     $set:{ userDp: uploadedImage.url,}
-    });
+    const updateData = await userDb.findOneAndUpdate(
+      { _id: req.headers.userId },
+      {
+        $set: { userDp: uploadedImage.url },
+      }
+    );
 
     if (updateData) {
-        cloudinary.v2.uploader
+      cloudinary.v2.uploader
         .destroy(publicId)
         .then((res) => console.log("prev image deleted"));
       return res
@@ -126,7 +124,6 @@ export const editUserDp = async (req, res) => {
     console.log(error);
   }
 };
-
 
 //--------------------------------------------------Edit Bgimage----------------------------------------//
 
@@ -136,16 +133,19 @@ export const editUserBgImg = async (req, res) => {
     const prevImage = userData.userCoverDp;
     const match = prevImage.match(/\/v\d+\/(.+?)\./);
     const publicId = match ? match[1] : null;
-    
+
     const img = req.file.path;
     const uploadedImage = await uploadToCloudinary(img, "userBgimg");
 
-    const updateData = await userDb.findOneAndUpdate({_id:req.headers.userId},{
-     $set:{ userCoverDp: uploadedImage.url,}
-    });
+    const updateData = await userDb.findOneAndUpdate(
+      { _id: req.headers.userId },
+      {
+        $set: { userCoverDp: uploadedImage.url },
+      }
+    );
 
     if (updateData) {
-        cloudinary.v2.uploader
+      cloudinary.v2.uploader
         .destroy(publicId)
         .then((res) => console.log("prev image deleted"));
       return res
@@ -156,6 +156,63 @@ export const editUserBgImg = async (req, res) => {
         updated: false,
         message: "somthing error while updating image!",
       });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//--------------------------------------------------Add skills----------------------------------------//
+
+export const addSkills = async (req, res) => {
+  try {
+    const data = req.body;
+    const skill = data.skill;
+    const exist = await userDb.findOne({
+      _id: req.headers.userId,
+      "skills.skill": skill
+    });
+    if (exist) {
+      return res
+        .status(200)
+        .json({ updated: false, message: "Skill already added" });
+    } else {
+      const updated = await userDb.findOneAndUpdate(
+        { _id: req.headers.userId },
+        { $push: { skills: data } }
+      );
+      if (updated) {
+        return res.status(200).json({ updated: true, message: "Skill added" });
+      } else {
+        return res
+          .status(200)
+          .json({
+            updated: false,
+            message: "somthing error while adding skill",
+          });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//--------------------------------------------------Delete skill----------------------------------------//
+
+export const deleteSkill = async (req, res) => {
+  try {
+    const { skill } = req.body;
+    const result = await userDb.updateOne(
+      { _id: req.headers.userId },
+      { $pull: { skills: { skill: skill } } }
+    );
+
+    if (result) {
+      return res.status(200).json({ updated: true, message: "Skill deleted!" });
+    } else {
+      return res
+        .status(200)
+        .json({ updated: false, message: "somthing error while removing skill" });
     }
   } catch (error) {
     console.log(error);

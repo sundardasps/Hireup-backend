@@ -16,6 +16,7 @@ import {
   getCompanyProfile,
   editeProfileImage,
   editPost,
+  getUserList
 } from "../controllers/companyControllers/companyController.js";
 
 import { companyAuth } from "../middleWares/auth.js";
@@ -40,5 +41,6 @@ companyRoute.post("/editProfile", companyAuth, editeProfile);
 companyRoute.get("/companyDetails", companyAuth,getCompanyProfile);
 companyRoute.post("/changeProfileImage",companyAuth,upload.single("image"),editeProfileImage);
 
+companyRoute.get("/getUserList",companyAuth,getUserList)
 
 export default companyRoute;

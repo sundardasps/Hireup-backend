@@ -91,6 +91,14 @@ export const companyLogin = async (req, res) => {
     const { email, password } = req.body;
     const exist = await companyDb.findOne({ email: email });
     if (exist) {
+      if(exist.is_blocked === true){
+        return res.json({
+          loginSuccess: false,
+          message: "user where blocked by admin!",
+        });
+      }else{
+
+      
       const passwordCheck = await bcrypt.compare(password, exist.password);
       if (passwordCheck) {
         if (exist.is_varified || exist.is_google) {
@@ -121,7 +129,10 @@ export const companyLogin = async (req, res) => {
           loginSuccess: false,
           message: "The password you entered is incorrect.",
         });
+      
       }
+    }
+
     } else {
       return res.json({
         loginSuccess: false,

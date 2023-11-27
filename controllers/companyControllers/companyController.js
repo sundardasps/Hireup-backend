@@ -3,7 +3,7 @@ import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import { tokenJwt } from "../../utils/authTokens.js";
 import jobDb from "../../models/companyPostModel.js";
 import cloudinary from "cloudinary/lib/cloudinary.js";
-import { set } from "mongoose";
+import userDb from "../../models/userModel.js"
 
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
@@ -304,3 +304,27 @@ export const editPost = async (req, res) => {
     }
   } catch (error) {}
 };
+
+//------------------------------------------ Company get Users ----------------------------------------//
+
+export const getUserList = async (req,res) =>{
+
+
+    try {
+       const {search} = req.query
+       let query = {is_blocked:false}
+       
+       if(search){
+         query.userName = { $regex: new RegExp(search, "i") }
+       }
+
+       const userList = await userDb.find(query)
+       if(userList){
+           return res.status(200).json({fetched:true,userList})
+       }else{
+        return res.status(200).json({fetched:false,userList:[]})
+       }
+    } catch (error) {
+         console.log(error);
+    }
+}

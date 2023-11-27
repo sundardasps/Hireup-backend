@@ -53,7 +53,13 @@ const userSchema = new mongoose.Schema({
   place:{
     type:String,
     default:"Share where I live"
-  }
+  },
+  skills:{
+    type:Array,
+    default:[]
+  },
+  
+
 });
 
 const user = mongoose.model("user", userSchema);

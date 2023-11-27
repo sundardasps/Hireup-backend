@@ -20,13 +20,13 @@ export const userAuth = async (req, res, next) => {
           req.headers.userId = exist._id;
           next();
         } else {
-          res.json({ message: "user where blocked by admin" });
+         return  res.json({ message: "user where blocked by admin" });
         }
       } else {
-        res.json({ message: "user not authorised or inavid user" });
+        return  res.json({ message: "user not authorised or inavid user" });
       }
     } else {
-      res.json({ message: "user not authorized" });
+      return  res.json({ message: "user not authorized" });
     }
 
   } catch (error) {}
@@ -45,13 +45,34 @@ export const companyAuth = async (req, res, next) => {
           req.headers.companyId = exist._id;
           next();
         } else {
-          res.json({ message: "user where blocked by admin" });
+          return  res.json({ message: "user where blocked by admin" });
         }
       } else {
-        res.json({ message: "user not authorised or inavid user" });
+       return  res.json({ message: "user not authorised or inavid user" });
       }
     } else {
-      res.json({ message: "user not authorized" });
+     return res.json({ message: "user not authorized" });
+    }
+  } catch (error) {}
+};
+
+
+//--------------------------------------admin auth------------------------------------//
+
+export const adminAuth = async (req, res, next) => {
+  try {
+    if (req.headers.authorization) {
+      const urlEncodedToken = req.headers.authorization.split(" ")[1];
+      const decode = jwt.verify(urlEncodedToken, process.env.jwtSecretKey);
+      const exist = await userDb.findOne({ _id:decode.exist._id});
+      if (exist) {
+          req.headers.adminId = exist._id;
+          next();
+      } else {
+       return  res.json({ message: "admin not authorised or inavid user" });
+      }
+    } else {
+     return res.json({ message: "admin not authorized" });
     }
   } catch (error) {}
 };
