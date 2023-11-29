@@ -3,6 +3,8 @@ import categoryDb from "../../models/categoryModel.js";
 import jobDb from "../../models/companyPostModel.js";
 import cloudinary from "cloudinary/lib/cloudinary.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
+import user from "../../models/userModel.js";
+
 //--------------------------------------------------Get cateogry----------------------------------------//
 
 export const getCategory = async (req, res) => {
@@ -48,7 +50,6 @@ export const getAllJobs = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const exist = await userDb.findOne({ _id: req.headers.userId });
-    console.log(exist);
     if (exist) {
       return res.status(200).json({ fetched: true, exist });
     } else {
@@ -170,7 +171,7 @@ export const addSkills = async (req, res) => {
     const skill = data.skill;
     const exist = await userDb.findOne({
       _id: req.headers.userId,
-      "skills.skill": skill
+      "skills.skill": skill,
     });
     if (exist) {
       return res
@@ -184,12 +185,10 @@ export const addSkills = async (req, res) => {
       if (updated) {
         return res.status(200).json({ updated: true, message: "Skill added" });
       } else {
-        return res
-          .status(200)
-          .json({
-            updated: false,
-            message: "somthing error while adding skill",
-          });
+        return res.status(200).json({
+          updated: false,
+          message: "somthing error while adding skill",
+        });
       }
     }
   } catch (error) {
@@ -210,11 +209,102 @@ export const deleteSkill = async (req, res) => {
     if (result) {
       return res.status(200).json({ updated: true, message: "Skill deleted!" });
     } else {
-      return res
-        .status(200)
-        .json({ updated: false, message: "somthing error while removing skill" });
+      return res.status(200).json({
+        updated: false,
+        message: "somthing error while removing skill",
+      });
     }
   } catch (error) {
     console.log(error);
   }
 };
+
+//--------------------------------------------------Add experience----------------------------------------//
+
+export const addExperience = async (req, res) => {
+  try {
+    const { experience } = req.body;
+    const trimmedExperience = experience.trim()
+
+    const exist = await userDb.findOne({
+      _id: req.headers.userId,
+      experience:trimmedExperience,
+    });
+    if (exist) {
+      return res.json({ created: false, message: "Experience already exist!" });
+    } else {
+      const creadted = await userDb.findOneAndUpdate(
+        { _id: req.headers.userId },
+        { $push: { experience: trimmedExperience } }
+      );
+      if (creadted) {
+        return res
+          .status(200)
+          .json({ created: true, message: "Experience added!" });
+      } else {
+        return res.json({
+          creadted: false,
+          message: "somthing error while adding experience!",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//--------------------------------------------------Edit experience----------------------------------------//
+
+export const editExperience = async (req, res) => {
+  try {
+    const { value, edited } = req.body;
+    const userId = req.headers.userId;
+    const exist = await userDb.findOne({
+      _id: req.headers.userId,
+      experience:edited,
+    });
+    if (exist) {
+      return res.json({ updated: false, message: "Make any changes and update!" });
+    } else {
+      const query = { _id: userId, experience: value };
+      const update = { $set: { "experience.$": edited } };
+      const options = { new: true };
+      const updated = await userDb.findOneAndUpdate(query, update, options);
+      if (updated) {
+        return res
+          .status(200)
+          .json({ updated: true, message: "Experience edited!" });
+      } else {
+        return res.json({
+          updated: false,
+          message: "somthing error while edit experience!",
+        });
+      }
+    }
+  } catch (error) {}
+};
+
+//--------------------------------------------------Delete experience----------------------------------------//
+
+export const deleteExperience = async (req,res) =>{
+      
+      try {
+            const {experience} = req.params
+            const trimmedExperience = experience.trim()
+            console.log(typeof trimmedExperience);
+            const updated =  await userDb.updateOne(
+              { _id: req.headers.userId },
+              { $pull: { experience : trimmedExperience } }
+            );
+            if(updated.modifiedCount === 1){
+              return res.status(200).json({update:true,message:"Deleted"})
+            }else{
+              return res.json({update:false,message:"somthing error while delete experience!"})
+            }
+
+           
+       } catch (error) {
+        
+      }
+
+}

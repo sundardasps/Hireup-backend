@@ -233,3 +233,30 @@ export const titleBlockorUnblock = async (req, res) => {
     }
   } catch (error) {}
 };
+
+//---------------- Sub category delete -------------------//
+
+export const deleteSubcategory = async (req,res) =>{
+      
+  try {
+        const {value,id} = req.body
+        const trimmedSubcategory = value.trim()
+        console.log(typeof trimmedExperience);
+        const updated =  await categoryDb.updateOne(
+          { _id:id },
+          { $pull: { category : value } }
+        );
+        console.log(updated);
+        if(updated.modifiedCount === 1){
+          return res.status(200).json({update:true,message:"Deleted"})
+        }else{
+          return res.json({update:false,message:"somthing error while delete subcategory!"})
+        }
+       
+   } catch (error) {
+     console.log(error);
+  }
+}
+
+
+

@@ -20,7 +20,7 @@ export const userAuth = async (req, res, next) => {
           req.headers.userId = exist._id;
           next();
         } else {
-         return  res.json({ message: "user where blocked by admin" });
+          return res.status(403).json({message: 'this user is blocked by admin'})
         }
       } else {
         return  res.json({ message: "user not authorised or inavid user" });
@@ -45,7 +45,7 @@ export const companyAuth = async (req, res, next) => {
           req.headers.companyId = exist._id;
           next();
         } else {
-          return  res.json({ message: "user where blocked by admin" });
+          return res.status(403).json({message: 'this user is blocked by admin'})
         }
       } else {
        return  res.json({ message: "user not authorised or inavid user" });

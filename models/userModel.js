@@ -58,6 +58,10 @@ const userSchema = new mongoose.Schema({
     type:Array,
     default:[]
   },
+  experience:{
+    type:Array,
+    default:[]
+  },
   
 
 });
