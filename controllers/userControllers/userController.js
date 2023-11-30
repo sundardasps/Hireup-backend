@@ -27,14 +27,20 @@ export const getAllJobs = async (req, res) => {
     let query = { is_active: true };
 
     if (search) {
-      query.job_title = { $regex: new RegExp(search, "i") };
+      query.$or = [
+        { job_title: { $regex: new RegExp(search, "i") } },
+        { companyName: { $regex: new RegExp(search, "i") } },
+        { companyLocation: { $regex: new RegExp(search, "i") } },
+        { job_type: { $regex: new RegExp(search, "i") } },
+        {required_skills:{$regex:new RegExp(search,"i")}}
+      ];
     }
-
-    if (filter) {
-      query.job_title = { $regex: new RegExp(filter, "i") };
-    }
-    const allJobs = await jobDb.find(query);
-    console.log(allJobs);
+  
+ 
+    // if (filter) {
+    //   query.job_title = { $regex: new RegExp(filter, "i") };
+    // }
+    const allJobs = await jobDb.find(query).sort({createdAt:-1});
     if (allJobs) {
       return res.status(200).json({ dataFetched: true, data: allJobs });
     } else {

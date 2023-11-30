@@ -16,7 +16,7 @@ import {
   getCompanyProfile,
   editeProfileImage,
   editPost,
-  getUserList
+  getUserList,checkCompleted
 } from "../controllers/companyControllers/companyController.js";
 
 import { companyAuth } from "../middleWares/auth.js";
@@ -31,6 +31,7 @@ companyRoute.post("/forgetPassword", companyforgetPassword);
 companyRoute.post("/resetPassword", companyResetPassword);
 companyRoute.post("/companyRegisterWithGoole", googleRegister);
 companyRoute.post("/companyFullDetails/:id",upload.single("image"),addcompanyFullDetails);
+companyRoute.get("/checkCompleted",companyAuth,checkCompleted)
 
 companyRoute.post("/addPost", companyAuth,companyAddPost);
 companyRoute.put("/editPost/:id", companyAuth,editPost);

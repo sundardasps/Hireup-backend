@@ -287,7 +287,7 @@ export const editPost = async (req, res) => {
           required_skills: skills,
           experience: experience,
           job_type: jobType,
-          responsibilities: responsibilities,
+          responsibilities:responsibilities,
           end_time: endTime,
           salery: salery,
         },
@@ -327,4 +327,19 @@ export const getUserList = async (req,res) =>{
     } catch (error) {
          console.log(error);
     }
+}
+
+//------------------------------------------ Company details check ----------------------------------------//
+
+export const checkCompleted = async (req,res) =>{
+  try {
+      const profile = await companyDb.findOne({_id:req.headers.companyId})
+      const completed = profile.is_completed
+      console.log(completed);
+      if(profile){
+        return res.status(200).json({completed})
+      }
+  } catch (error) {
+    
+  }
 }
