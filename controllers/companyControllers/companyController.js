@@ -3,7 +3,7 @@ import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import { tokenJwt } from "../../utils/authTokens.js";
 import jobDb from "../../models/companyPostModel.js";
 import cloudinary from "cloudinary/lib/cloudinary.js";
-import userDb from "../../models/userModel.js"
+import userDb from "../../models/userModel.js";
 
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
@@ -73,8 +73,8 @@ export const companyAddPost = async (req, res) => {
       salery: salery,
       companyName: company.companyName,
       companyImage: company.image,
-      companyLocation:company.location,
-      
+      companyLocation: company.location,
+      companyId: id,
     });
     const companyData = await saveData.save();
     if (companyData) {
@@ -106,25 +106,55 @@ export const companyAddPost = async (req, res) => {
 
 export const getPostCompany = async (req, res) => {
   try {
-    const { search, filter, page } = req.query;
 
-    let query = { is_active: true };
+    const allJobs = await jobDb.find({is_delete:false});
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, "0");
+    const day = today.getDate().toString().padStart(2, "0");
+    const formattedDate = `${year}-${month}-${day}`;
+
+    allJobs.forEach(async (value) => {
+      if (value.end_time < formattedDate) {
+        await jobDb.findOneAndUpdate(
+          { _id: value._id },
+          { $set: { is_active: false } }
+        );
+      }
+    });
+
+    const { search, filter, page } = req.query;
+    
+    let query = {is_active:true};
+        query = {is_delete:false};
+
     if (filter === "Active") {
       query.is_active = true;
     } else if (filter === "Expired") {
       query.is_active = false;
     }
+
     if (search) {
-      query.job_title = { $regex: new RegExp(search, "i") };
+      query.$or = [
+        { job_title: { $regex: new RegExp(search, "i") } },
+        { required_skills: { $regex: new RegExp(search, "i") } },
+        { job_type: { $regex: new RegExp(search, "i") } },
+        { companyLocation: { $regex: new RegExp(search, "i") } },
+        { companyName: { $regex: new RegExp(search, "i") } },
+      ];
     }
 
-    let limit = 4;
-    let skip = (page - 1) * 4;
+    let limit = 3;
+    let skip = (page - 1) * limit;
 
     const companyData = await companyDb.findOne({ _id: req.headers.companyId });
+
     const jobs = companyData.jobs;
 
-    const count = await jobDb.find().countDocuments();
+    const count = await jobDb
+      .find({ _id: { $in: jobs }, ...query })
+      .countDocuments();
+
     let totalPage = Math.ceil(count / limit);
     const Fulldetails = await jobDb
       .find({ _id: { $in: jobs }, ...query })
@@ -143,7 +173,7 @@ export const getPostCompany = async (req, res) => {
     } else {
       res
         .status(200)
-        .json({ fetched: false, data: [], totalPage, count, companyData });
+        .json({ fetched: false, data: [], totalPage: 0, count, companyData });
     }
   } catch (error) {
     console.error(error);
@@ -243,9 +273,12 @@ export const editeProfileImage = async (req, res) => {
 
     const img = req.file.path;
     const uploadedImage = await uploadToCloudinary(img, "companyDp");
-    const updateData = await companyDb.findOneAndUpdate({_id: req.headers.companyId},{
-      image: uploadedImage.url,
-    });
+    const updateData = await companyDb.findOneAndUpdate(
+      { _id: req.headers.companyId },
+      {
+        image: uploadedImage.url,
+      }
+    );
 
     if (updateData) {
       cloudinary.v2.uploader
@@ -287,7 +320,7 @@ export const editPost = async (req, res) => {
           required_skills: skills,
           experience: experience,
           job_type: jobType,
-          responsibilities:responsibilities,
+          responsibilities: responsibilities,
           end_time: endTime,
           salery: salery,
         },
@@ -307,39 +340,52 @@ export const editPost = async (req, res) => {
 
 //------------------------------------------ Company get Users ----------------------------------------//
 
-export const getUserList = async (req,res) =>{
+export const getUserList = async (req, res) => {
+  try {
+    const { search } = req.query;
+    let query = { is_blocked: false };
 
-
-    try {
-       const {search} = req.query
-       let query = {is_blocked:false}
-       
-       if(search){
-         query.userName = { $regex: new RegExp(search, "i") }
-       }
-
-       const userList = await userDb.find(query)
-       if(userList){
-           return res.status(200).json({fetched:true,userList})
-       }else{
-        return res.status(200).json({fetched:false,userList:[]})
-       }
-    } catch (error) {
-         console.log(error);
+    if (search) {
+      query.userName = { $regex: new RegExp(search, "i") };
     }
-}
+
+    const userList = await userDb.find(query);
+    if (userList) {
+      return res.status(200).json({ fetched: true, userList });
+    } else {
+      return res.status(200).json({ fetched: false, userList: [] });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 //------------------------------------------ Company details check ----------------------------------------//
 
-export const checkCompleted = async (req,res) =>{
+export const checkCompleted = async (req, res) => {
   try {
-      const profile = await companyDb.findOne({_id:req.headers.companyId})
-      const completed = profile.is_completed
-      console.log(completed);
-      if(profile){
-        return res.status(200).json({completed})
+    const profile = await companyDb.findOne({ _id: req.headers.companyId });
+    const completed = profile.is_completed;
+    console.log(completed);
+    if (profile) {
+      return res.status(200).json({ completed });
+    }
+  } catch (error) {}
+};
+
+//------------------------------------------ Company post delete ----------------------------------------//
+
+export const deleteJob = async (req,res) =>{
+  try{
+      const id = req.params.id
+      const deleted = await jobDb.findOneAndUpdate({_id:id},{$set:{is_delete:true}})
+      if(deleted){
+        return res.status(200).json({updated:true , message : "Deleted."})
+      }else{
+        return res.json({updated:false , message : "Something error while deletion!"})
       }
   } catch (error) {
-    
+    console.log(error);
   }
+
 }

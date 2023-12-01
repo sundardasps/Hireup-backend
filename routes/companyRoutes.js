@@ -16,7 +16,8 @@ import {
   getCompanyProfile,
   editeProfileImage,
   editPost,
-  getUserList,checkCompleted
+  getUserList,checkCompleted,
+  deleteJob,
 } from "../controllers/companyControllers/companyController.js";
 
 import { companyAuth } from "../middleWares/auth.js";
@@ -35,9 +36,11 @@ companyRoute.get("/checkCompleted",companyAuth,checkCompleted)
 
 companyRoute.post("/addPost", companyAuth,companyAddPost);
 companyRoute.put("/editPost/:id", companyAuth,editPost);
-
 companyRoute.get("/getPost", companyAuth, getPostCompany);
 companyRoute.get("/postDetails/:id", companyAuth, jobFullDetails);
+companyRoute.get("/deleteJob/:id",companyAuth,deleteJob);
+
+
 companyRoute.post("/editProfile", companyAuth, editeProfile);
 companyRoute.get("/companyDetails", companyAuth,getCompanyProfile);
 companyRoute.post("/changeProfileImage",companyAuth,upload.single("image"),editeProfileImage);

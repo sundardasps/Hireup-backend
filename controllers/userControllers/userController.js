@@ -22,9 +22,26 @@ export const getCategory = async (req, res) => {
 
 export const getAllJobs = async (req, res) => {
   try {
+    
+    const jobs = await jobDb.find();
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, "0");
+    const day = today.getDate().toString().padStart(2, "0");
+    const formattedDate = `${year}-${month}-${day}`;
+
+    jobs.forEach(async (value) => {
+      if (value.end_time < formattedDate) {
+        await jobDb.findOneAndUpdate(
+          { _id: value._id },
+          { $set: { is_active: false } }
+        );
+      }
+    });
+
     const { search, filter } = req.query;
 
-    let query = { is_active: true };
+    let query = {is_delete:false};
 
     if (search) {
       query.$or = [
@@ -32,19 +49,19 @@ export const getAllJobs = async (req, res) => {
         { companyName: { $regex: new RegExp(search, "i") } },
         { companyLocation: { $regex: new RegExp(search, "i") } },
         { job_type: { $regex: new RegExp(search, "i") } },
-        {required_skills:{$regex:new RegExp(search,"i")}}
       ];
     }
-  
- 
+
     // if (filter) {
     //   query.job_title = { $regex: new RegExp(filter, "i") };
     // }
-    const allJobs = await jobDb.find(query).sort({createdAt:-1});
+
+    const allJobs = await jobDb.find(query).sort({ createdAt: -1 });
+
     if (allJobs) {
       return res.status(200).json({ dataFetched: true, data: allJobs });
     } else {
-      return res.json({ dataFetched: false, data: allJobs });
+      return res.json({ dataFetched: false, data:allJobs });
     }
   } catch (error) {
     console.log(error);
@@ -56,8 +73,14 @@ export const getAllJobs = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const exist = await userDb.findOne({ _id: req.headers.userId });
+    let total = 0;
+    if (exist && exist.experience) {
+      exist.experience.forEach((value, index) => {
+        total = total + Number(value.match(/\d+/g));
+      });
+    }
     if (exist) {
-      return res.status(200).json({ fetched: true, exist });
+      return res.status(200).json({ fetched: true, exist, total });
     } else {
       return res.status(200).json({ fetched: false, data: [] });
     }
@@ -230,11 +253,11 @@ export const deleteSkill = async (req, res) => {
 export const addExperience = async (req, res) => {
   try {
     const { experience } = req.body;
-    const trimmedExperience = experience.trim()
+    const trimmedExperience = experience.trim();
 
     const exist = await userDb.findOne({
       _id: req.headers.userId,
-      experience:trimmedExperience,
+      experience: trimmedExperience,
     });
     if (exist) {
       return res.json({ created: false, message: "Experience already exist!" });
@@ -267,10 +290,13 @@ export const editExperience = async (req, res) => {
     const userId = req.headers.userId;
     const exist = await userDb.findOne({
       _id: req.headers.userId,
-      experience:edited,
+      experience: edited,
     });
     if (exist) {
-      return res.json({ updated: false, message: "Make any changes and update!" });
+      return res.json({
+        updated: false,
+        message: "Make any changes and update!",
+      });
     } else {
       const query = { _id: userId, experience: value };
       const update = { $set: { "experience.$": edited } };
@@ -292,25 +318,22 @@ export const editExperience = async (req, res) => {
 
 //--------------------------------------------------Delete experience----------------------------------------//
 
-export const deleteExperience = async (req,res) =>{
-      
-      try {
-            const {experience} = req.params
-            const trimmedExperience = experience.trim()
-            console.log(typeof trimmedExperience);
-            const updated =  await userDb.updateOne(
-              { _id: req.headers.userId },
-              { $pull: { experience : trimmedExperience } }
-            );
-            if(updated.modifiedCount === 1){
-              return res.status(200).json({update:true,message:"Deleted"})
-            }else{
-              return res.json({update:false,message:"somthing error while delete experience!"})
-            }
-
-           
-       } catch (error) {
-        
-      }
-
-}
+export const deleteExperience = async (req, res) => {
+  try {
+    const { experience } = req.params;
+    const trimmedExperience = experience.trim();
+    console.log(typeof trimmedExperience);
+    const updated = await userDb.updateOne(
+      { _id: req.headers.userId },
+      { $pull: { experience: trimmedExperience } }
+    );
+    if (updated.modifiedCount === 1) {
+      return res.status(200).json({ update: true, message: "Deleted" });
+    } else {
+      return res.json({
+        update: false,
+        message: "somthing error while delete experience!",
+      });
+    }
+  } catch (error) {}
+};

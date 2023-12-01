@@ -49,7 +49,15 @@ const post = mongoose.Schema({
   companyLocation:{
     type:String,
     require:true
-  }
+  },
+    companyId:{
+    type:String,
+    require:true
+  },
+  is_delete:{
+  type:Boolean,
+  default:false
+}
 
 });
 
