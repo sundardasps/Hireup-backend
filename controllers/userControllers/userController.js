@@ -2,6 +2,7 @@ import userDb from "../../models/userModel.js";
 import categoryDb from "../../models/categoryModel.js";
 import jobDb from "../../models/companyPostModel.js";
 import cloudinary from "cloudinary/lib/cloudinary.js";
+import companyDb from '../../models/companyModel.js'
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import user from "../../models/userModel.js";
 
@@ -335,5 +336,18 @@ export const deleteExperience = async (req, res) => {
         message: "somthing error while delete experience!",
       });
     }
+  } catch (error) {}
+};
+
+//----------------------------------------Get All company for landing page----------------------------------------//
+
+export const getAllCompany = async (req, res) => {
+  try {
+       const companyData = await companyDb.find()
+       if(companyData){
+         return res.status(200).json({fetched:true, companyData,message:"Data fetched!"})
+       }else{
+        return res.json({fetched:false,companyData:[],message:"somthing error while fetching the data!"})
+       }
   } catch (error) {}
 };

@@ -31,7 +31,7 @@ export const addcompanyFullDetails = async (req, res) => {
           location: companyLocation,
           company_roles: companyRoles,
           gst_number: gstNumber,
-          is_completed: true,
+          is_completed:1,
           companyName,
           size,
         },

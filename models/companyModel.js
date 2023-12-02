@@ -62,8 +62,8 @@ const companySchema = new mongoose.Schema({
     default:""
   },
   is_completed: {
-    type:Boolean,
-    default:false,
+    type:Number,
+    default:0,
   },
   jobs:{
     type:Array,

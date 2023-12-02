@@ -61,7 +61,7 @@ export const companyAuth = async (req, res, next) => {
 
 export const adminAuth = async (req, res, next) => {
   try {
-    if (req.headers.authorization) {
+    if (req.headers.authorization){
       const urlEncodedToken = req.headers.authorization.split(" ")[1];
       const decode = jwt.verify(urlEncodedToken, process.env.jwtSecretKey);
       const exist = await userDb.findOne({ _id:decode.exist._id});

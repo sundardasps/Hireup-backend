@@ -62,6 +62,10 @@ const userSchema = new mongoose.Schema({
     type:Array,
     default:[]
   },
+  appliedJobs:{
+    type:Array,
+    default:[]
+  },
   
 
 });
