@@ -4,6 +4,7 @@ import { tokenJwt } from "../../utils/authTokens.js";
 import jobDb from "../../models/companyPostModel.js";
 import cloudinary from "cloudinary/lib/cloudinary.js";
 import userDb from "../../models/userModel.js";
+import categoryDb from "../../models/categoryModel.js"
 
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
@@ -137,7 +138,6 @@ export const getPostCompany = async (req, res) => {
     if (search) {
       query.$or = [
         { job_title: { $regex: new RegExp(search, "i") } },
-        { required_skills: { $regex: new RegExp(search, "i") } },
         { job_type: { $regex: new RegExp(search, "i") } },
         { companyLocation: { $regex: new RegExp(search, "i") } },
         { companyName: { $regex: new RegExp(search, "i") } },
@@ -342,16 +342,24 @@ export const editPost = async (req, res) => {
 
 export const getUserList = async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search , filter } = req.query;
+
     let query = { is_blocked: false };
 
     if (search) {
-      query.userName = { $regex: new RegExp(search, "i") };
+      query.$or = [
+        {userName :{ $regex: new RegExp(search, "i") }},
+        {userTitle :{ $regex: new RegExp(search, "i") }}
+
+      ]
+    }
+    if(filter){
+      query.userTitle = {$regex:new RegExp(filter,"i")}
     }
 
     const userList = await userDb.find(query);
     if (userList) {
-      return res.status(200).json({ fetched: true, userList });
+      return res.status(200).json({ fetched: true,  userList });
     } else {
       return res.status(200).json({ fetched: false, userList: [] });
     }
@@ -389,3 +397,16 @@ export const deleteJob = async (req,res) =>{
   }
 
 }
+
+//------------------------------------------ Get all category ----------------------------------------//
+
+export const getCategory = async (req, res) => {
+  try {
+    const categoryData = await categoryDb.find({ is_active: true });
+    if (categoryData) {
+      return res.status(200).json({ status:true, data: categoryData });
+    } else {
+      res.json({ message: "Network error" });
+    }
+  } catch (error) {}
+};

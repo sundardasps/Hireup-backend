@@ -18,6 +18,7 @@ import {
   editPost,
   getUserList,checkCompleted,
   deleteJob,
+  getCategory
 } from "../controllers/companyControllers/companyController.js";
 
 import { companyAuth } from "../middleWares/auth.js";
@@ -46,5 +47,7 @@ companyRoute.get("/companyDetails", companyAuth,getCompanyProfile);
 companyRoute.post("/changeProfileImage",companyAuth,upload.single("image"),editeProfileImage);
 
 companyRoute.get("/getUserList",companyAuth,getUserList)
+companyRoute.get("/categoryDataForCompany",companyAuth,getCategory)
+
 
 export default companyRoute;

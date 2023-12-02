@@ -52,9 +52,9 @@ export const getAllJobs = async (req, res) => {
       ];
     }
 
-    // if (filter) {
-    //   query.job_title = { $regex: new RegExp(filter, "i") };
-    // }
+    if (filter) {
+      query.job_title = { $regex: new RegExp(filter, "i") };
+    }
 
     const allJobs = await jobDb.find(query).sort({ createdAt: -1 });
 
