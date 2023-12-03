@@ -447,3 +447,20 @@ export const deleteEducation = async (req, res) => {
     console.log(error);
   }
 };
+
+//--------------------------------------------------Apply job----------------------------------------//
+
+export const applyJob = async (req, res) => {
+  try {
+    
+    const img = req.file.path;
+    // const uploadedImage = await uploadToCloudinary(img, "userResume");
+
+
+
+    //  const dfn = await jobDb.findOne({_id:req.body.id})
+
+  } catch (error) {
+    console.log(error);
+  }
+}

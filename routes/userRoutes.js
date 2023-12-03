@@ -22,7 +22,8 @@ import {
   getAllCompany,
   addEducation,
   editEducation,
-  deleteEducation
+  deleteEducation,
+  applyJob,
 } from "../controllers/userControllers/userController.js";
 
 import { userAuth } from "../middleWares/auth.js";
@@ -54,6 +55,9 @@ userRoute.post("/deleteExperience/:experience",userAuth,deleteExperience);
 userRoute.post("/addEducation",userAuth,addEducation)
 userRoute.patch("/editEducation",userAuth,editEducation)
 userRoute.put("/deleteEducation",userAuth,deleteEducation)
+
+userRoute.post("/applyJOb",userAuth,upload.single("resume"),applyJob)
+
 
 userRoute.get("/getAllCompany",getAllCompany);
 
