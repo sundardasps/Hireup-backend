@@ -377,12 +377,10 @@ export const addEducation = async (req, res) => {
         { $push: { education: education } }
       );
       if (addData) {
-        return res
-          .status(200)
-          .json({
-            created: true,
-            message: "Qualification added successfully.",
-          });
+        return res.status(200).json({
+          created: true,
+          message: "Qualification added successfully.",
+        });
       } else {
         return res.json({
           created: false,
@@ -391,4 +389,61 @@ export const addEducation = async (req, res) => {
       }
     }
   } catch (error) {}
+};
+
+//----------------------------------------Edit education----------------------------------------//
+
+export const editEducation = async (req, res) => {
+  try {
+    const { prevData, editData } = req.body;
+    const exist = await userDb.findOne({
+      _id: req.headers.userId,
+      education: { $all: editData },
+    });
+    if (exist) {
+      return res.json({
+        updated: false,
+        message: "Make any changes and update!",
+      });
+    } else {
+      const query = { _id: req.headers.userId, education: prevData };
+      const update = { $set: { "education.$": editData } };
+      const options = { new: true };
+
+      const addData = await userDb.findOneAndUpdate(query, update, options);
+      if (addData) {
+        return res.status(200).json({
+          updated: true,
+          message: "Qualification updated successfully.",
+        });
+      } else {
+        return res.json({
+          updated: false,
+          message: "somthing error while adding the data!",
+        });
+      }
+    }
+  } catch (error) {}
+};
+
+//--------------------------------------------------Delete experience----------------------------------------//
+
+export const deleteEducation = async (req, res) => {
+  try {
+    const prevData = req.body;
+    const updated = await userDb.updateOne(
+      { _id: req.headers.userId },
+      { $pull: { education: prevData } }
+    )
+    if (updated.modifiedCount === 1) {
+      return res.status(200).json({ delete: true, message: "Deleted." });
+    } else {
+      return res.json({
+        delete: false,
+        message: "somthing error while delete education!",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };

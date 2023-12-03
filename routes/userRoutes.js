@@ -20,7 +20,9 @@ import {
   editExperience,
   deleteExperience,
   getAllCompany,
-  addEducation
+  addEducation,
+  editEducation,
+  deleteEducation
 } from "../controllers/userControllers/userController.js";
 
 import { userAuth } from "../middleWares/auth.js";
@@ -47,11 +49,11 @@ userRoute.post("/deleteSkill", userAuth, deleteSkill);
 
 userRoute.post("/addExperience", userAuth,addExperience);
 userRoute.put("/editExperience", userAuth,editExperience);
-
 userRoute.post("/deleteExperience/:experience",userAuth,deleteExperience);
 
 userRoute.post("/addEducation",userAuth,addEducation)
-
+userRoute.patch("/editEducation",userAuth,editEducation)
+userRoute.put("/deleteEducation",userAuth,deleteEducation)
 
 userRoute.get("/getAllCompany",getAllCompany);
 
