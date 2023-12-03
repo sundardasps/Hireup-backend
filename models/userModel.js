@@ -61,6 +61,11 @@ const userSchema = new mongoose.Schema({
   experience:{
     type:Array,
     default:[]
+  }
+  ,
+  education:{
+    type:Array,
+    default:[]
   },
   appliedJobs:{
     type:Array,

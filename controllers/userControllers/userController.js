@@ -2,7 +2,7 @@ import userDb from "../../models/userModel.js";
 import categoryDb from "../../models/categoryModel.js";
 import jobDb from "../../models/companyPostModel.js";
 import cloudinary from "cloudinary/lib/cloudinary.js";
-import companyDb from '../../models/companyModel.js'
+import companyDb from "../../models/companyModel.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import user from "../../models/userModel.js";
 
@@ -23,7 +23,6 @@ export const getCategory = async (req, res) => {
 
 export const getAllJobs = async (req, res) => {
   try {
-    
     const jobs = await jobDb.find();
     const today = new Date();
     const year = today.getFullYear();
@@ -42,7 +41,7 @@ export const getAllJobs = async (req, res) => {
 
     const { search, filter } = req.query;
 
-    let query = {is_delete:false};
+    let query = { is_delete: false };
 
     if (search) {
       query.$or = [
@@ -62,7 +61,7 @@ export const getAllJobs = async (req, res) => {
     if (allJobs) {
       return res.status(200).json({ dataFetched: true, data: allJobs });
     } else {
-      return res.json({ dataFetched: false, data:allJobs });
+      return res.json({ dataFetched: false, data: allJobs });
     }
   } catch (error) {
     console.log(error);
@@ -343,11 +342,53 @@ export const deleteExperience = async (req, res) => {
 
 export const getAllCompany = async (req, res) => {
   try {
-       const companyData = await companyDb.find()
-       if(companyData){
-         return res.status(200).json({fetched:true, companyData,message:"Data fetched!"})
-       }else{
-        return res.json({fetched:false,companyData:[],message:"somthing error while fetching the data!"})
-       }
+    const companyData = await companyDb.find();
+    if (companyData) {
+      return res
+        .status(200)
+        .json({ fetched: true, companyData, message: "Data fetched!" });
+    } else {
+      return res.json({
+        fetched: false,
+        companyData: [],
+        message: "somthing error while fetching the data!",
+      });
+    }
+  } catch (error) {}
+};
+
+//----------------------------------------Add education----------------------------------------//
+
+export const addEducation = async (req, res) => {
+  try {
+    const education = req.body;
+    const exist = await userDb.findOne({
+      _id: req.headers.userId,
+      education: { $all: education },
+    });
+    if (exist) {
+      return res.json({
+        created: false,
+        message: "same education details already exist!",
+      });
+    } else {
+      const addData = await userDb.findOneAndUpdate(
+        { _id: req.headers.userId },
+        { $push: { education: education } }
+      );
+      if (addData) {
+        return res
+          .status(200)
+          .json({
+            created: true,
+            message: "Qualification added successfully.",
+          });
+      } else {
+        return res.json({
+          created: false,
+          message: "somthing error while adding the data!",
+        });
+      }
+    }
   } catch (error) {}
 };

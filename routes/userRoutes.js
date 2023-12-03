@@ -19,7 +19,8 @@ import {
   addExperience,
   editExperience,
   deleteExperience,
-  getAllCompany
+  getAllCompany,
+  addEducation
 } from "../controllers/userControllers/userController.js";
 
 import { userAuth } from "../middleWares/auth.js";
@@ -48,6 +49,9 @@ userRoute.post("/addExperience", userAuth,addExperience);
 userRoute.put("/editExperience", userAuth,editExperience);
 
 userRoute.post("/deleteExperience/:experience",userAuth,deleteExperience);
+
+userRoute.post("/addEducation",userAuth,addEducation)
+
 
 userRoute.get("/getAllCompany",getAllCompany);
 
