@@ -4,8 +4,8 @@ import jobDb from "../../models/companyPostModel.js";
 import cloudinary from "cloudinary/lib/cloudinary.js";
 import companyDb from "../../models/companyModel.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
-import user from "../../models/userModel.js";
-
+import applyJobDb from "../../models/jobApply.js";
+import sendMail from "../../utils/sendMails.js";
 //--------------------------------------------------Get cateogry----------------------------------------//
 
 export const getCategory = async (req, res) => {
@@ -434,7 +434,7 @@ export const deleteEducation = async (req, res) => {
     const updated = await userDb.updateOne(
       { _id: req.headers.userId },
       { $pull: { education: prevData } }
-    )
+    );
     if (updated.modifiedCount === 1) {
       return res.status(200).json({ delete: true, message: "Deleted." });
     } else {
@@ -452,15 +452,50 @@ export const deleteEducation = async (req, res) => {
 
 export const applyJob = async (req, res) => {
   try {
-    
+    const { companyId, jobId } = req.body;
     const img = req.file.path;
-    // const uploadedImage = await uploadToCloudinary(img, "userResume");
-
-
-
-    //  const dfn = await jobDb.findOne({_id:req.body.id})
-
+    const uploadedImage = await uploadToCloudinary(img, "userResume");
+    if (uploadToCloudinary) {
+      const applyJobData = new applyJobDb({
+        jobId,
+        companyId,
+        userId: req.headers.userId,
+        resume: uploadedImage.url,
+      });
+      const savedData = await applyJobData.save();
+      if (savedData) {
+        const userData = await userDb.findOneAndUpdate(
+          { _id: req.headers.userId },
+          { $push: { appliedJobs: jobId } }
+        );
+        const jobData = await jobDb.findOneAndUpdate(
+          { _id: jobId },
+          { $push: { appliedUsers: req.headers.userId } }
+        );
+        const email = userData.email;
+        const url = `Your application has been submitted to ${jobData.companyName}.Please await further updates and notifications.`;
+        sendMail(
+          email,
+          `${userData.userName}, Your application to at ${jobData.companyName}.`,
+          url
+        );
+        return res.status(200).json({
+          created: true,
+          message: `Your application has been submitted to ${jobData.companyName}.`,
+        });
+      } else {
+        return res.json({
+          created: false,
+          message: "somthing error while apply job ,try sometimes leter!",
+        });
+      }
+    } else {
+      return res.json({
+        created: false,
+        message: "somthing error while apply job ,try sometimes leter!",
+      });
+    }
   } catch (error) {
     console.log(error);
   }
-}
+};

@@ -57,8 +57,11 @@ const post = mongoose.Schema({
   is_delete:{
   type:Boolean,
   default:false
-}
-
+ },
+ appliedUsers:{
+  type:Array,
+  default:[]
+ }
 });
 
 const jobs = mongoose.model("jobs", post);
