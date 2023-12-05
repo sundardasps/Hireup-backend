@@ -5,7 +5,7 @@ import jobDb from "../../models/companyPostModel.js";
 import cloudinary from "cloudinary/lib/cloudinary.js";
 import userDb from "../../models/userModel.js";
 import categoryDb from "../../models/categoryModel.js"
-
+import userApplicationDb from '../../models/jobApply.js'
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
 export const addcompanyFullDetails = async (req, res) => {
@@ -409,4 +409,64 @@ export const getCategory = async (req, res) => {
       res.json({ message: "Network error" });
     }
   } catch (error) {}
+};
+
+//------------------------------------------ Get user details ----------------------------------------//
+
+export const getUserDetails = async (req, res) => {
+  try {
+        const userData = await userDb.findOne({_id:req.params.id})
+        let total = 0;
+        if (userData && userData.experience) {
+          userData.experience.forEach((value, index) => {
+            total = total + Number(value.match(/\d+/g));
+          });
+        }
+
+        if(userData){
+          return res.status(200).json({fetched:true,total,userData,message:"Data fetched!"})
+        }else{
+          return res.json({fetched:false,userData,message:"Data fetched!"})
+        }
+  } catch (error) {console.log(error);}
+};
+
+//------------------------------------------ Get applied user ----------------------------------------//
+
+export const getAppliedUsers = async (req, res) => {
+  try {
+        const jobData = await jobDb.findOne({_id:req.params.id})
+        const usersId = jobData.appliedUsers
+        const usersData = await userDb.find({_id:usersId}) 
+        if(usersData){
+          return res.status(200).json({fetched:true,usersData,message:"Data fetched!"})
+        }else{
+          return res.json({fetched:false,usersData,message:"Data fetched!"})
+        }
+  } catch (error) {console.log(error);}
+};
+
+//------------------------------------------ Get Single User JobApplication ----------------------------------------//
+
+export const getSingleUserApplication = async (req, res) => {
+  try {
+        const {userId,jobId} = req.body
+        const userData = await userDb.findOne({_id:userId})
+        const applicationsId = userData.appliedJobs
+        const jobApplication = await userApplicationDb.findOne({_id:applicationsId,userId,jobId})
+
+        let resumeType = ""
+
+        if(jobApplication.resume){
+          const image = jobApplication.resume
+          const array = image.split(".").reverse()
+           resumeType = array[0]
+        }
+        
+        if(jobApplication){
+          return res.status(200).json({fetched:true,jobApplication,resumeType,message:"Data fetched!"})
+        }else{
+          return res.json({fetched:false,jobApplication,resumeType,message:"Data fetched!"})
+        }
+  } catch (error) {console.log(error);}
 };

@@ -6,6 +6,7 @@ import companyDb from "../../models/companyModel.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import applyJobDb from "../../models/jobApply.js";
 import sendMail from "../../utils/sendMails.js";
+import e from "express";
 //--------------------------------------------------Get cateogry----------------------------------------//
 
 export const getCategory = async (req, res) => {
@@ -466,7 +467,7 @@ export const applyJob = async (req, res) => {
       if (savedData) {
         const userData = await userDb.findOneAndUpdate(
           { _id: req.headers.userId },
-          { $push: { appliedJobs: jobId } }
+          { $push: { appliedJobs: applyJobData._id } }
         );
         const jobData = await jobDb.findOneAndUpdate(
           { _id: jobId },
@@ -493,6 +494,49 @@ export const applyJob = async (req, res) => {
       return res.json({
         created: false,
         message: "somthing error while apply job ,try sometimes leter!",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//--------------------------------------------------Applied job list----------------------------------------//
+
+export const appliedJobList = async (req, res) => {
+  try {
+    const { filter, search } = req.query;
+
+    const query = {};
+    const query2 = {};
+    if (filter === "pre") {
+      query2.createdAt = 1;
+    } else if (filter === "old") {
+      query2.createdAt = -1;
+    }
+
+    if (search) {
+      query.$or = [
+        { job_title: { $regex: new RegExp(search, "i") } },
+        { job_type: { $regex: new RegExp(search, "i") } },
+        { companyName: { $regex: new RegExp(search, "i") } },
+      ];
+    }
+
+    const userData = await userDb.findOne({ _id: req.headers.userId });
+    const appliedJobsId = userData.appliedJobs;
+    console.log(appliedJobsId);
+    query._id = { $in: appliedJobsId.map((id) => id) };
+    const appliedJobData = await jobDb.find(query).sort(query2);
+    if (appliedJobData) {
+      return res
+        .status(200)
+        .json({ fetched: true, appliedJobData, message: "data fetched!" });
+    } else {
+      return res.json({
+        fetched: false,
+        appliedJobData: [],
+        message: "somthing error while fetching data!",
       });
     }
   } catch (error) {

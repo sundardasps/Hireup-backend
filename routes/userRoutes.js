@@ -24,6 +24,7 @@ import {
   editEducation,
   deleteEducation,
   applyJob,
+  appliedJobList,
 } from "../controllers/userControllers/userController.js";
 
 import { userAuth } from "../middleWares/auth.js";
@@ -57,6 +58,7 @@ userRoute.patch("/editEducation",userAuth,editEducation)
 userRoute.put("/deleteEducation",userAuth,deleteEducation)
 
 userRoute.post("/applyJOb",userAuth,upload.single("resume"),applyJob)
+userRoute.get("/getAppliedJobs",userAuth,appliedJobList)
 
 
 userRoute.get("/getAllCompany",getAllCompany);

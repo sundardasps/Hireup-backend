@@ -18,7 +18,10 @@ import {
   editPost,
   getUserList,checkCompleted,
   deleteJob,
-  getCategory
+  getCategory,
+  getUserDetails,
+  getAppliedUsers,
+  getSingleUserApplication
 } from "../controllers/companyControllers/companyController.js";
 
 import { companyAuth } from "../middleWares/auth.js";
@@ -47,6 +50,10 @@ companyRoute.get("/companyDetails", companyAuth,getCompanyProfile);
 companyRoute.post("/changeProfileImage",companyAuth,upload.single("image"),editeProfileImage);
 
 companyRoute.get("/getUserList",companyAuth,getUserList)
+companyRoute.get("/getUserProfile/:id",companyAuth,getUserDetails)
+companyRoute.get("/getAppliedUsers/:id",companyAuth,getAppliedUsers)
+companyRoute.put("/getSingleUserApplication",companyAuth,getSingleUserApplication)
+
 companyRoute.get("/categoryDataForCompany",companyAuth,getCategory)
 
 

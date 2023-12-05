@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     default: "user",
   },
   is_admin: {
-    type: String,
+    type: Boolean,
     default: false,
   },
   is_google:{
