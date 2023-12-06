@@ -16,7 +16,11 @@ const applyJobSchema = mongoose.Schema({
     resume:{
        type:String,
        required:true
-    }
+    },
+    status:{
+        type:String,
+        default:"",
+     },
 })
 
 const applyJob = mongoose.model("applyJob",applyJobSchema)

@@ -4,8 +4,9 @@ import { tokenJwt } from "../../utils/authTokens.js";
 import jobDb from "../../models/companyPostModel.js";
 import cloudinary from "cloudinary/lib/cloudinary.js";
 import userDb from "../../models/userModel.js";
-import categoryDb from "../../models/categoryModel.js"
-import userApplicationDb from '../../models/jobApply.js'
+import categoryDb from "../../models/categoryModel.js";
+import userApplicationDb from "../../models/jobApply.js";
+import sendMail from "../../utils/sendMails.js";
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
 export const addcompanyFullDetails = async (req, res) => {
@@ -31,7 +32,7 @@ export const addcompanyFullDetails = async (req, res) => {
           location: companyLocation,
           company_roles: companyRoles,
           gst_number: gstNumber,
-          is_completed:1,
+          is_completed: 1,
           companyName,
           size,
         },
@@ -107,8 +108,7 @@ export const companyAddPost = async (req, res) => {
 
 export const getPostCompany = async (req, res) => {
   try {
-
-    const allJobs = await jobDb.find({is_delete:false});
+    const allJobs = await jobDb.find({ is_delete: false });
     const today = new Date();
     const year = today.getFullYear();
     const month = (today.getMonth() + 1).toString().padStart(2, "0");
@@ -125,9 +125,9 @@ export const getPostCompany = async (req, res) => {
     });
 
     const { search, filter, page } = req.query;
-    
-    let query = {is_active:true};
-        query = {is_delete:false};
+
+    let query = { is_active: true };
+    query = { is_delete: false };
 
     if (filter === "Active") {
       query.is_active = true;
@@ -342,24 +342,23 @@ export const editPost = async (req, res) => {
 
 export const getUserList = async (req, res) => {
   try {
-    const { search , filter } = req.query;
+    const { search, filter } = req.query;
 
     let query = { is_blocked: false };
 
     if (search) {
       query.$or = [
-        {userName :{ $regex: new RegExp(search, "i") }},
-        {userTitle :{ $regex: new RegExp(search, "i") }}
-
-      ]
+        { userName: { $regex: new RegExp(search, "i") } },
+        { userTitle: { $regex: new RegExp(search, "i") } },
+      ];
     }
-    if(filter){
-      query.userTitle = {$regex:new RegExp(filter,"i")}
+    if (filter) {
+      query.userTitle = { $regex: new RegExp(filter, "i") };
     }
 
     const userList = await userDb.find(query);
     if (userList) {
-      return res.status(200).json({ fetched: true,  userList });
+      return res.status(200).json({ fetched: true, userList });
     } else {
       return res.status(200).json({ fetched: false, userList: [] });
     }
@@ -383,20 +382,25 @@ export const checkCompleted = async (req, res) => {
 
 //------------------------------------------ Company post delete ----------------------------------------//
 
-export const deleteJob = async (req,res) =>{
-  try{
-      const id = req.params.id
-      const deleted = await jobDb.findOneAndUpdate({_id:id},{$set:{is_delete:true}})
-      if(deleted){
-        return res.status(200).json({updated:true , message : "Deleted."})
-      }else{
-        return res.json({updated:false , message : "Something error while deletion!"})
-      }
+export const deleteJob = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deleted = await jobDb.findOneAndUpdate(
+      { _id: id },
+      { $set: { is_delete: true } }
+    );
+    if (deleted) {
+      return res.status(200).json({ updated: true, message: "Deleted." });
+    } else {
+      return res.json({
+        updated: false,
+        message: "Something error while deletion!",
+      });
+    }
   } catch (error) {
     console.log(error);
   }
-
-}
+};
 
 //------------------------------------------ Get all category ----------------------------------------//
 
@@ -404,7 +408,7 @@ export const getCategory = async (req, res) => {
   try {
     const categoryData = await categoryDb.find({ is_active: true });
     if (categoryData) {
-      return res.status(200).json({ status:true, data: categoryData });
+      return res.status(200).json({ status: true, data: categoryData });
     } else {
       res.json({ message: "Network error" });
     }
@@ -415,58 +419,117 @@ export const getCategory = async (req, res) => {
 
 export const getUserDetails = async (req, res) => {
   try {
-        const userData = await userDb.findOne({_id:req.params.id})
-        let total = 0;
-        if (userData && userData.experience) {
-          userData.experience.forEach((value, index) => {
-            total = total + Number(value.match(/\d+/g));
-          });
-        }
+    const userData = await userDb.findOne({ _id: req.params.id });
+    let total = 0;
+    if (userData && userData.experience) {
+      userData.experience.forEach((value, index) => {
+        total = total + Number(value.match(/\d+/g));
+      });
+    }
 
-        if(userData){
-          return res.status(200).json({fetched:true,total,userData,message:"Data fetched!"})
-        }else{
-          return res.json({fetched:false,userData,message:"Data fetched!"})
-        }
-  } catch (error) {console.log(error);}
+    if (userData) {
+      return res
+        .status(200)
+        .json({ fetched: true, total, userData, message: "Data fetched!" });
+    } else {
+      return res.json({ fetched: false, userData, message: "Data fetched!" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 //------------------------------------------ Get applied user ----------------------------------------//
 
 export const getAppliedUsers = async (req, res) => {
   try {
-        const jobData = await jobDb.findOne({_id:req.params.id})
-        const usersId = jobData.appliedUsers
-        const usersData = await userDb.find({_id:usersId}) 
-        if(usersData){
-          return res.status(200).json({fetched:true,usersData,message:"Data fetched!"})
-        }else{
-          return res.json({fetched:false,usersData,message:"Data fetched!"})
-        }
-  } catch (error) {console.log(error);}
+    const jobData = await jobDb.findOne({ _id: req.params.id });
+    const usersId = jobData.appliedUsers;
+    const usersData = await userDb.find({ _id: usersId });
+    if (usersData) {
+      return res
+        .status(200)
+        .json({ fetched: true, usersData, message: "Data fetched!" });
+    } else {
+      return res.json({ fetched: false, usersData, message: "Data fetched!" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 //------------------------------------------ Get Single User JobApplication ----------------------------------------//
 
 export const getSingleUserApplication = async (req, res) => {
   try {
-        const {userId,jobId} = req.body
-        const userData = await userDb.findOne({_id:userId})
-        const applicationsId = userData.appliedJobs
-        const jobApplication = await userApplicationDb.findOne({_id:applicationsId,userId,jobId})
+    const { userId, jobId } = req.body;
+    const userData = await userDb.findOne({ _id: userId });
+    const applicationsId = userData.appliedJobs;
+    const jobApplication = await userApplicationDb.findOne({
+      _id: applicationsId,
+      userId,
+      jobId,
+    });
+    let resumeType = "";
 
-        let resumeType = ""
+    if (jobApplication.resume) {
+      const image = jobApplication.resume;
+      const array = image.split(".").reverse();
+      resumeType = array[0];
+    }
 
-        if(jobApplication.resume){
-          const image = jobApplication.resume
-          const array = image.split(".").reverse()
-           resumeType = array[0]
-        }
-        
-        if(jobApplication){
-          return res.status(200).json({fetched:true,jobApplication,resumeType,message:"Data fetched!"})
-        }else{
-          return res.json({fetched:false,jobApplication,resumeType,message:"Data fetched!"})
-        }
-  } catch (error) {console.log(error);}
+    if (jobApplication) {
+      return res.status(200).json({
+        fetched: true,
+        jobApplication,
+        resumeType,
+        message: "Data fetched!",
+      });
+    } else {
+      return res.json({
+        fetched: false,
+        jobApplication,
+        resumeType,
+        message: "Data fetched!",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//------------------------------------------ JobApplication reject ----------------------------------------//
+
+export const rejectUserApplication = async (req, res) => {
+  try {
+    const { userId, jobId } = req.body;
+    const userData = await userDb.findOne({ _id: userId });
+    const applicationsId = userData.appliedJobs;
+    const jobApplication = await userApplicationDb.findOneAndUpdate(
+      {
+        _id: applicationsId,
+        userId,
+        jobId,
+      },
+      { $set: { status: "rejected" } }
+    );
+
+    if (jobApplication) {
+      const userRejected = await jobDb.findOneAndUpdate(
+        { _id: jobId },
+        { $pull: { appliedUsers: userId } }
+      );
+      const emailContent = `Dear ${userData.userName},
+     
+         Thank you for your interest in the  position at ${userRejected.companyName}. We appreciate the time and effort you invested in the application process.
+         After careful consideration, we regret to inform you that we have chosen not to move forward with your application. The competition was tough, and while we were impressed with your qualifications, we have selected another candidate whose skills and experience more closely match our needs at this time.
+         We want to express our gratitude for your interest in joining our team. We value your talents and wish you the best in your job search.
+         If you have any questions or would like feedback on your application, please feel free to contact our HR department at hr@example.com.
+         We genuinely appreciate the opportunity to consider you for a position with [Your Company Name] and wish you success in your future endeavors.
+         Best regards,
+         ${userRejected.companyName}
+     `;
+      sendMail(userData.email, "Hireup", emailContent);
+    }
+  } catch (error) {}
 };

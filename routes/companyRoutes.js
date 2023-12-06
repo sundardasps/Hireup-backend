@@ -21,7 +21,8 @@ import {
   getCategory,
   getUserDetails,
   getAppliedUsers,
-  getSingleUserApplication
+  getSingleUserApplication,
+  rejectUserApplication
 } from "../controllers/companyControllers/companyController.js";
 
 import { companyAuth } from "../middleWares/auth.js";
@@ -53,6 +54,8 @@ companyRoute.get("/getUserList",companyAuth,getUserList)
 companyRoute.get("/getUserProfile/:id",companyAuth,getUserDetails)
 companyRoute.get("/getAppliedUsers/:id",companyAuth,getAppliedUsers)
 companyRoute.put("/getSingleUserApplication",companyAuth,getSingleUserApplication)
+companyRoute.put("/rejectUserapplication",companyAuth,rejectUserApplication)
+
 
 companyRoute.get("/categoryDataForCompany",companyAuth,getCategory)
 

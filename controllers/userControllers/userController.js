@@ -471,7 +471,7 @@ export const applyJob = async (req, res) => {
         );
         const jobData = await jobDb.findOneAndUpdate(
           { _id: jobId },
-          { $push: { appliedUsers: req.headers.userId } }
+          { $push: { appliedUsers: String(req.headers.userId) } }
         );
         const email = userData.email;
         const url = `Your application has been submitted to ${jobData.companyName}.Please await further updates and notifications.`;
@@ -508,10 +508,8 @@ export const appliedJobList = async (req, res) => {
     const { filter, search } = req.query;
 
     const query = {};
-    const query2 = {};
-    if (filter === "pre") {
-      query2.createdAt = 1;
-    } else if (filter === "old") {
+    const query2 = {createdAt : 1};
+     if (filter === "old") {
       query2.createdAt = -1;
     }
 
@@ -525,9 +523,10 @@ export const appliedJobList = async (req, res) => {
 
     const userData = await userDb.findOne({ _id: req.headers.userId });
     const appliedJobsId = userData.appliedJobs;
-    console.log(appliedJobsId);
-    query._id = { $in: appliedJobsId.map((id) => id) };
+    const application   = await applyJobDb.find({_id:appliedJobsId})
+    query._id = { $in: application.map((value) => value.jobId) };
     const appliedJobData = await jobDb.find(query).sort(query2);
+    console.log(appliedJobData);
     if (appliedJobData) {
       return res
         .status(200)

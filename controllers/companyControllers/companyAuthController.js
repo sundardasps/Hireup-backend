@@ -91,48 +91,44 @@ export const companyLogin = async (req, res) => {
     const { email, password } = req.body;
     const exist = await companyDb.findOne({ email: email });
     if (exist) {
-      if(exist.is_blocked === true){
+      if (exist.is_blocked === true) {
         return res.json({
           loginSuccess: false,
           message: "user where blocked by admin!",
         });
-      }else{
+      } else {
+        const passwordCheck = await bcrypt.compare(password, exist.password);
+        if (passwordCheck) {
+          if (exist.is_varified || exist.is_google) {
+            const jwtToken = tokenJwt(exist);
+            return res.status(200).json({
+              loginData: exist,
+              jwtToken,
+              message: "Logined successfully",
+              loginSuccess: true,
+            });
+          } else {
+            const emailToken = await new authTokenDb({
+              companyId: exist._id,
+              token: crypto.randomBytes(32).toString("hex"),
+            }).save();
 
-      
-      const passwordCheck = await bcrypt.compare(password, exist.password);
-      if (passwordCheck) {
-        if (exist.is_varified || exist.is_google) {
-          const jwtToken = tokenJwt(exist);
-          return res.status(200).json({
-            loginData: exist,
-            jwtToken,
-            message: "Logined successfully",
-            loginSuccess: true,
-          });
+            const url = `${process.env.FrontEnd_Url}company/${exist._id}/varification/${emailToken.token}`;
+            console.log(url);
+            sendMail(email, "Company Varification mail", url);
+            return res.status(200).json({
+              created: true,
+              message:
+                "Your account is not verified; an email has been sent to your account. Please click the link to verify.",
+            });
+          }
         } else {
-          const emailToken = await new authTokenDb({
-            companyId: exist._id,
-            token: crypto.randomBytes(32).toString("hex"),
-          }).save();
-
-          const url = `${process.env.FrontEnd_Url}company/${exist._id}/varification/${emailToken.token}`;
-          console.log(url);
-          sendMail(email, "Company Varification mail", url);
-          return res.status(200).json({
-            created: true,
-            message:
-              "Your account is not verified; an email has been sent to your account. Please click the link to verify.",
+          return res.json({
+            loginSuccess: false,
+            message: "The password you entered is incorrect.",
           });
         }
-      } else {
-        return res.json({
-          loginSuccess: false,
-          message: "The password you entered is incorrect.",
-        });
-      
       }
-    }
-
     } else {
       return res.json({
         loginSuccess: false,
