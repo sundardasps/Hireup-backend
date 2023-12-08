@@ -443,15 +443,52 @@ export const getUserDetails = async (req, res) => {
 
 export const getAppliedUsers = async (req, res) => {
   try {
-    const jobData = await jobDb.findOne({ _id: req.params.id });
-    const usersId = jobData.appliedUsers;
-    const usersData = await userDb.find({ _id: usersId });
+
+    const {jobId,search,filter} = req.query
+
+    let query = {}
+
+    if(search){
+      query.userName = {$regex : new RegExp(search,"i")}
+    }
+    const jobData = await jobDb.findOne({ _id: jobId });
+    // const applicationId = jobData.appliedUsers;
+
+    const usersIdAggregation = await userApplicationDb.aggregate([
+      {
+        $match: {
+          jobId:jobId,
+          status:filter,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          userIds: {
+            $push: "$userId",
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          userIds: 1,
+        },
+      },
+    ]);
+    
+    query._id = usersIdAggregation[0] ? usersIdAggregation[0].userIds : [];
+    console.log(query);
+    const usersData = await userDb.find(query);
     if (usersData) {
-      return res
-        .status(200)
-        .json({ fetched: true, usersData, message: "Data fetched!" });
+      return res.status(200).json({
+        fetched: true,
+        usersData,
+        jobTitle: jobData.job_title,
+        message: "Data fetched!",
+      });
     } else {
-      return res.json({ fetched: false, usersData, message: "Data fetched!" });
+      return res.json({ fetched: false, message: "Data fetched!" });
     }
   } catch (error) {
     console.log(error);
@@ -511,7 +548,7 @@ export const rejectUserApplication = async (req, res) => {
         userId,
         jobId,
       },
-      { $set: { status: "rejected" } }
+      { $set: { status: "Rejected" } }
     );
 
     if (jobApplication) {
@@ -520,16 +557,30 @@ export const rejectUserApplication = async (req, res) => {
         { $pull: { appliedUsers: userId } }
       );
       const emailContent = `Dear ${userData.userName},
-     
-         Thank you for your interest in the  position at ${userRejected.companyName}. We appreciate the time and effort you invested in the application process.
-         After careful consideration, we regret to inform you that we have chosen not to move forward with your application. The competition was tough, and while we were impressed with your qualifications, we have selected another candidate whose skills and experience more closely match our needs at this time.
-         We want to express our gratitude for your interest in joining our team. We value your talents and wish you the best in your job search.
-         If you have any questions or would like feedback on your application, please feel free to contact our HR department at hr@example.com.
-         We genuinely appreciate the opportunity to consider you for a position with [Your Company Name] and wish you success in your future endeavors.
-         Best regards,
+         Thank you for applying for ${userRejected.job_title} at ${userRejected.companyName}. 
+         After careful review, we've can't move with your application now.
+         We appreciate your interest and wish you success in your job search.
+         best regards,
          ${userRejected.companyName}
      `;
       sendMail(userData.email, "Hireup", emailContent);
+      if (userRejected) {
+        return res
+          .status(200)
+          .json({
+            reject: true,
+            message: `${userData.userName}'s, application rejected succesfully.`,
+          });
+      } else {
+        return res
+          .status(500)
+          .json({
+            reject: false,
+            message: `Something error while rejecting ${userData.userName}'s, application`,
+          });
+      }
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };

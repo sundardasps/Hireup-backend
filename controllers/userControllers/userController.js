@@ -471,7 +471,7 @@ export const applyJob = async (req, res) => {
         );
         const jobData = await jobDb.findOneAndUpdate(
           { _id: jobId },
-          { $push: { appliedUsers: String(req.headers.userId) } }
+          { $push: { appliedUsers: applyJobData._id } }
         );
         const email = userData.email;
         const url = `Your application has been submitted to ${jobData.companyName}.Please await further updates and notifications.`;
@@ -508,8 +508,8 @@ export const appliedJobList = async (req, res) => {
     const { filter, search } = req.query;
 
     const query = {};
-    const query2 = {createdAt : 1};
-     if (filter === "old") {
+    const query2 = { createdAt: 1 };
+    if (filter === "old") {
       query2.createdAt = -1;
     }
 
@@ -523,10 +523,10 @@ export const appliedJobList = async (req, res) => {
 
     const userData = await userDb.findOne({ _id: req.headers.userId });
     const appliedJobsId = userData.appliedJobs;
-    const application   = await applyJobDb.find({_id:appliedJobsId})
+    const application = await applyJobDb.find({ _id: appliedJobsId });
     query._id = { $in: application.map((value) => value.jobId) };
     const appliedJobData = await jobDb.find(query).sort(query2);
-    console.log(appliedJobData);
+
     if (appliedJobData) {
       return res
         .status(200)
@@ -537,6 +537,27 @@ export const appliedJobList = async (req, res) => {
         appliedJobData: [],
         message: "somthing error while fetching data!",
       });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//---------------------------------------Check currect job applied or not -------------------------------------//
+
+export const checkJobappliedOrNot = async (req, res) => {
+  try {
+    const { userId, jobId } = req.query;
+    const userData = await userDb.findOne({ _id: userId });
+    const appliedJobsId = userData.appliedJobs;
+    const checkIsApplied = await jobDb.findOne({
+      _id: jobId,
+      appliedUsers: { $in: appliedJobsId },
+    });
+    if (checkIsApplied) {
+      return res.status(200).json({ data: checkIsApplied, exist: true });
+    } else {
+      return res.status(400).json({ data: checkIsApplied, exist: false });
     }
   } catch (error) {
     console.log(error);

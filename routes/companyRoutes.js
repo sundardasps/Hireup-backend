@@ -52,7 +52,7 @@ companyRoute.post("/changeProfileImage",companyAuth,upload.single("image"),edite
 
 companyRoute.get("/getUserList",companyAuth,getUserList)
 companyRoute.get("/getUserProfile/:id",companyAuth,getUserDetails)
-companyRoute.get("/getAppliedUsers/:id",companyAuth,getAppliedUsers)
+companyRoute.get("/getAppliedUsers/",companyAuth,getAppliedUsers)
 companyRoute.put("/getSingleUserApplication",companyAuth,getSingleUserApplication)
 companyRoute.put("/rejectUserapplication",companyAuth,rejectUserApplication)
 
