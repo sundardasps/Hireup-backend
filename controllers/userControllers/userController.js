@@ -563,3 +563,27 @@ export const checkJobappliedOrNot = async (req, res) => {
     console.log(error);
   }
 };
+
+//------------------------------------ Check applied job status -------------------------------------//
+
+export const checkJobAppliedStatus = async (req, res) => {
+  try {
+    const { userId, jobId } = req.query;
+    const userData = await userDb.findOne({ _id: userId });
+    const applicationId1 = userData.appliedJobs;
+    const jobData = await jobDb.findOne({_id: jobId,});
+    const applicationId2 = jobData.appliedUsers
+
+    const commonValuesId = applicationId1.filter(value => applicationId2.includes(value));
+    const application  = await applyJobDb.findOne({_id:commonValuesId})
+
+    const applicationStatus =  application.status
+    if (applicationStatus) {
+      return res.status(200).json({ status: applicationStatus});
+    } else {
+      return res.status(400).json({ status: applicationStatus});
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};

@@ -19,7 +19,7 @@ const applyJobSchema = mongoose.Schema({
     },
     status:{
         type:String,
-        default:"",
+        default:"submitted",
      },
 })
 

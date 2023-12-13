@@ -342,7 +342,7 @@ export const editPost = async (req, res) => {
 
 export const getUserList = async (req, res) => {
   try {
-    const { search, filter } = req.query;
+    const { search, filter , page} = req.query;
 
     let query = { is_blocked: false };
 
@@ -352,13 +352,18 @@ export const getUserList = async (req, res) => {
         { userTitle: { $regex: new RegExp(search, "i") } },
       ];
     }
+
     if (filter) {
       query.userTitle = { $regex: new RegExp(filter, "i") };
     }
 
-    const userList = await userDb.find(query);
+    let limit = 8
+    const skip = (page - 1 )*limit
+    let count =   await userDb.find().countDocuments();
+    let totalPage = Math.ceil(count/limit)
+    const userList = await userDb.find(query).skip(skip).limit(limit);
     if (userList) {
-      return res.status(200).json({ fetched: true, userList });
+      return res.status(200).json({ fetched: true, userList,totalPage});
     } else {
       return res.status(200).json({ fetched: false, userList: [] });
     }
@@ -373,7 +378,7 @@ export const checkCompleted = async (req, res) => {
   try {
     const profile = await companyDb.findOne({ _id: req.headers.companyId });
     const completed = profile.is_completed;
-    console.log(completed);
+
     if (profile) {
       return res.status(200).json({ completed });
     }
@@ -445,20 +450,18 @@ export const getAppliedUsers = async (req, res) => {
   try {
 
     const {jobId,search,filter} = req.query
-
     let query = {}
 
     if(search){
       query.userName = {$regex : new RegExp(search,"i")}
     }
     const jobData = await jobDb.findOne({ _id: jobId });
-    // const applicationId = jobData.appliedUsers;
-
+  
     const usersIdAggregation = await userApplicationDb.aggregate([
       {
         $match: {
           jobId:jobId,
-          status:filter,
+          status:filter?filter:{$in:["viewed","submitted"]},
         },
       },
       {
@@ -476,9 +479,8 @@ export const getAppliedUsers = async (req, res) => {
         },
       },
     ]);
-    
+
     query._id = usersIdAggregation[0] ? usersIdAggregation[0].userIds : [];
-    console.log(query);
     const usersData = await userDb.find(query);
     if (usersData) {
       return res.status(200).json({
@@ -500,13 +502,14 @@ export const getAppliedUsers = async (req, res) => {
 export const getSingleUserApplication = async (req, res) => {
   try {
     const { userId, jobId } = req.body;
+
     const userData = await userDb.findOne({ _id: userId });
     const applicationsId = userData.appliedJobs;
-    const jobApplication = await userApplicationDb.findOne({
+    const jobApplication = await userApplicationDb.findOneAndUpdate({
       _id: applicationsId,
       userId,
       jobId,
-    });
+    },{$set:{status:"viewed"}});
     let resumeType = "";
 
     if (jobApplication.resume) {
@@ -548,7 +551,7 @@ export const rejectUserApplication = async (req, res) => {
         userId,
         jobId,
       },
-      { $set: { status: "Rejected" } }
+      { $set: { status: "rejected" } }
     );
 
     if (jobApplication) {

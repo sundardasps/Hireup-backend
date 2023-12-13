@@ -26,6 +26,7 @@ import {
   applyJob,
   appliedJobList,
   checkJobappliedOrNot,
+  checkJobAppliedStatus
 } from "../controllers/userControllers/userController.js";
 
 import { userAuth } from "../middleWares/auth.js";
@@ -61,6 +62,8 @@ userRoute.put("/deleteEducation",userAuth,deleteEducation)
 userRoute.post("/applyJOb",userAuth,upload.single("resume"),applyJob)
 userRoute.get("/getAppliedJobs",userAuth,appliedJobList)
 userRoute.get("/checkJobAppliedOrNot",userAuth,checkJobappliedOrNot)
+userRoute.get("/checkJobAppliedStatus",userAuth,checkJobAppliedStatus)
+
 
 userRoute.get("/getAllCompany",getAllCompany);
 
