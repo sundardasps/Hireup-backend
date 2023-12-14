@@ -7,6 +7,7 @@ import userDb from "../../models/userModel.js";
 import categoryDb from "../../models/categoryModel.js";
 import userApplicationDb from "../../models/jobApply.js";
 import sendMail from "../../utils/sendMails.js";
+import intervieweDb from '../../models/InterviewModel.js'
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
 export const addcompanyFullDetails = async (req, res) => {
@@ -342,7 +343,7 @@ export const editPost = async (req, res) => {
 
 export const getUserList = async (req, res) => {
   try {
-    const { search, filter , page} = req.query;
+    const { search, filter, page } = req.query;
 
     let query = { is_blocked: false };
 
@@ -357,13 +358,13 @@ export const getUserList = async (req, res) => {
       query.userTitle = { $regex: new RegExp(filter, "i") };
     }
 
-    let limit = 8
-    const skip = (page - 1 )*limit
-    let count =   await userDb.find().countDocuments();
-    let totalPage = Math.ceil(count/limit)
+    let limit = 8;
+    const skip = (page - 1) * limit;
+    let count = await userDb.find().countDocuments();
+    let totalPage = Math.ceil(count / limit);
     const userList = await userDb.find(query).skip(skip).limit(limit);
     if (userList) {
-      return res.status(200).json({ fetched: true, userList,totalPage});
+      return res.status(200).json({ fetched: true, userList, totalPage });
     } else {
       return res.status(200).json({ fetched: false, userList: [] });
     }
@@ -448,20 +449,19 @@ export const getUserDetails = async (req, res) => {
 
 export const getAppliedUsers = async (req, res) => {
   try {
+    const { jobId, search, filter } = req.query;
+    let query = {};
 
-    const {jobId,search,filter} = req.query
-    let query = {}
-
-    if(search){
-      query.userName = {$regex : new RegExp(search,"i")}
+    if (search) {
+      query.userName = { $regex: new RegExp(search, "i") };
     }
     const jobData = await jobDb.findOne({ _id: jobId });
-  
+
     const usersIdAggregation = await userApplicationDb.aggregate([
       {
         $match: {
-          jobId:jobId,
-          status:filter?filter:{$in:["viewed","submitted"]},
+          jobId: jobId,
+          status: filter ? filter : { $in: ["viewed", "submitted"] },
         },
       },
       {
@@ -505,11 +505,14 @@ export const getSingleUserApplication = async (req, res) => {
 
     const userData = await userDb.findOne({ _id: userId });
     const applicationsId = userData.appliedJobs;
-    const jobApplication = await userApplicationDb.findOneAndUpdate({
-      _id: applicationsId,
-      userId,
-      jobId,
-    },{$set:{status:"viewed"}});
+    const jobApplication = await userApplicationDb.findOneAndUpdate(
+      {
+        _id: applicationsId,
+        userId,
+        jobId,
+      },
+      { $set: { status: "viewed" } }
+    );
     let resumeType = "";
 
     if (jobApplication.resume) {
@@ -568,22 +571,35 @@ export const rejectUserApplication = async (req, res) => {
      `;
       sendMail(userData.email, "Hireup", emailContent);
       if (userRejected) {
-        return res
-          .status(200)
-          .json({
-            reject: true,
-            message: `${userData.userName}'s, application rejected succesfully.`,
-          });
+        return res.status(200).json({
+          reject: true,
+          message: `${userData.userName}'s, application rejected succesfully.`,
+        });
       } else {
-        return res
-          .status(500)
-          .json({
-            reject: false,
-            message: `Something error while rejecting ${userData.userName}'s, application`,
-          });
+        return res.status(500).json({
+          reject: false,
+          message: `Something error while rejecting ${userData.userName}'s, application`,
+        });
       }
     }
   } catch (error) {
     console.log(error);
   }
 };
+
+//------------------------------------------ schedule interview ----------------------------------------//
+
+export const scheduleInterview = async (req,res)=>{
+
+    try {
+      const {values:{interviewer,type,date,requirement},userId,jobId} = req.body
+      const inrterview =await intervieweDb({
+        jobId,
+        userId,
+      })
+
+    } catch (error) {
+      
+    }
+
+}

@@ -22,7 +22,8 @@ import {
   getUserDetails,
   getAppliedUsers,
   getSingleUserApplication,
-  rejectUserApplication
+  rejectUserApplication,
+  scheduleInterview
 } from "../controllers/companyControllers/companyController.js";
 
 import { companyAuth } from "../middleWares/auth.js";
@@ -58,6 +59,8 @@ companyRoute.put("/rejectUserapplication",companyAuth,rejectUserApplication)
 
 
 companyRoute.get("/categoryDataForCompany",companyAuth,getCategory)
+companyRoute.post("/scheduleInterview",companyAuth,scheduleInterview)
+
 
 
 export default companyRoute;
