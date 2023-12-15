@@ -7,7 +7,7 @@ import userDb from "../../models/userModel.js";
 import categoryDb from "../../models/categoryModel.js";
 import userApplicationDb from "../../models/jobApply.js";
 import sendMail from "../../utils/sendMails.js";
-import intervieweDb from '../../models/InterviewModel.js'
+import intervieweDb from "../../models/InterviewModel.js";
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
 export const addcompanyFullDetails = async (req, res) => {
@@ -589,17 +589,81 @@ export const rejectUserApplication = async (req, res) => {
 
 //------------------------------------------ schedule interview ----------------------------------------//
 
-export const scheduleInterview = async (req,res)=>{
-
-    try {
-      const {values:{interviewer,type,date,requirement},userId,jobId} = req.body
-      const inrterview =await intervieweDb({
+export const scheduleInterview = async (req, res) => {
+  try {
+    const {
+      values: { interviewer, type, date, requirement },
+      userId,
+      jobId,
+    } = req.body;
+    const exist = await intervieweDb.findOne({ userId, jobId });
+    console.log(exist);
+    if (exist) {
+      return res.json({
+        created: false,
+        message: "The interview for this position is already scheduled!",
+      });
+    } else {
+      const userData = await userDb.findOne({ _id: userId });
+      const applicationsId = userData.appliedJobs;
+      const application = await userApplicationDb.findOne({
+        _id: applicationsId,
+        userId,
+        jobId,
+      });
+      const jobData = await jobDb.findOne({ _id: jobId });
+      const inrterview = await intervieweDb({
+        date,
+        type,
         jobId,
         userId,
-      })
+        interviewer,
+        requirements: requirement,
+        applicationId: application._id,
+      });
+      const savedInterview = await inrterview.save();
+      if (savedInterview) {
+        let content = `Dear ${userData.userName},
 
-    } catch (error) {
-      
+          We are pleased to inform you that you have been selected for an HR interview for the ${jobData.job_title} position at ${jobData.companyName}. Your application was reviewed by ${interviewer} on ${date}. Please prepare for the interview, taking note of the preferred requirements outlined.
+          
+          Here are the details for the interview: ${requirement}.
+          
+          Best regards,
+          ${jobData.companyName}
+        `;
+        sendMail(userData.email, "HireUp interview scheduled", content);
+        return res
+          .status(200)
+          .json({
+            created: true,
+            message: "Interview scheduled successfully..",
+          });
+      } else {
+        return res
+          .status(402)
+          .json({ created: false, message: "Something error while deletion!" });
+      }
     }
+  } catch (error) {}
+};
 
+//------------------------------------------ scheduled interview list ----------------------------------------//
+
+export const getsheduledInterviews = async (req,res)=>{
+   
+     try {
+      const companyData = await companyDb.findOne({_id:req.headers.companyId})
+      const jobIds = companyData.jobs
+      const interviewsList = await intervieweDb.find({ jobId: { $in: jobIds } });
+
+      if(interviewsList){
+         return res.status(200).json({list:interviewsList})
+      }else{
+        return res.status(403).json({list:[]})
+      }
+     } catch (error) {
+      
+     }
+      
 }

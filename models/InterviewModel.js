@@ -22,6 +22,8 @@ const interviewSchema = mongoose.Schema({
   requirements: {
     type: String,
   },
+},{
+  timestamps: true,
 });
 
 const scheduledInterview = mongoose.model("InterviewModel", interviewSchema);
