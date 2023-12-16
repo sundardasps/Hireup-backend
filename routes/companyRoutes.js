@@ -24,7 +24,8 @@ import {
   getSingleUserApplication,
   rejectUserApplication,
   scheduleInterview,
-  getsheduledInterviews
+  getsheduledInterviews,
+  reScheduleInterview,
 } from "../controllers/companyControllers/companyController.js";
 
 import { companyAuth } from "../middleWares/auth.js";
@@ -62,6 +63,8 @@ companyRoute.put("/rejectUserapplication",companyAuth,rejectUserApplication)
 companyRoute.get("/categoryDataForCompany",companyAuth,getCategory)
 companyRoute.post("/scheduleInterview",companyAuth,scheduleInterview)
 companyRoute.get("/getscheduleInterview",companyAuth,getsheduledInterviews)
+companyRoute.patch("/reScheduleInterview",companyAuth,reScheduleInterview)
+
 
 
 

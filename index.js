@@ -9,6 +9,8 @@ const app = express();
 env.config()
 
 mongoose.connect("mongodb://127.0.0.1:27017/react-secondProject")
+
+//middleware
 app.use(express.json())
 
 

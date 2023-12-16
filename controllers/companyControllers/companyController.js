@@ -618,7 +618,12 @@ export const scheduleInterview = async (req, res) => {
         jobId,
         userId,
         interviewer,
+        userDp: userData.userDp,
+        userNumber: userData.number,
+        userEmail: userData.email,
+        userTitle: userData.userTitle,
         requirements: requirement,
+        userName: userData.userName,
         applicationId: application._id,
       });
       const savedInterview = await inrterview.save();
@@ -633,12 +638,10 @@ export const scheduleInterview = async (req, res) => {
           ${jobData.companyName}
         `;
         sendMail(userData.email, "HireUp interview scheduled", content);
-        return res
-          .status(200)
-          .json({
-            created: true,
-            message: "Interview scheduled successfully..",
-          });
+        return res.status(200).json({
+          created: true,
+          message: "Interview scheduled successfully..",
+        });
       } else {
         return res
           .status(402)
@@ -650,20 +653,58 @@ export const scheduleInterview = async (req, res) => {
 
 //------------------------------------------ scheduled interview list ----------------------------------------//
 
-export const getsheduledInterviews = async (req,res)=>{
-   
-     try {
-      const companyData = await companyDb.findOne({_id:req.headers.companyId})
-      const jobIds = companyData.jobs
-      const interviewsList = await intervieweDb.find({ jobId: { $in: jobIds } });
+export const getsheduledInterviews = async (req, res) => {
+  try {
+    const companyData = await companyDb.findOne({ _id: req.headers.companyId });
+    const jobIds = companyData.jobs;
+    const interviewsList = await intervieweDb.find({ jobId: { $in: jobIds } });
 
-      if(interviewsList){
-         return res.status(200).json({list:interviewsList})
-      }else{
-        return res.status(403).json({list:[]})
-      }
-     } catch (error) {
-      
-     }
-      
-}
+    if (interviewsList) {
+      return res.status(200).json({ list: interviewsList });
+    } else {
+      return res.status(403).json({ list: [] });
+    }
+  } catch (error) {}
+};
+
+//------------------------------------------ schedule interview ----------------------------------------//
+
+export const reScheduleInterview = async (req, res) => {
+  try {
+    const {
+      values: { interviewer, type, date, requirement },
+      userId,
+      jobId,
+      interviewId,
+    } = req.body;
+    console.log(req.body);
+
+    const userData = await userDb.findOne({ _id: userId });
+    const jobData = await jobDb.findOne({ _id: jobId });
+    const inrterview = await intervieweDb.findOneAndUpdate(
+      { _id: interviewId },
+      { $set: { date, type, interviewer, requirements: requirement } }
+    );
+
+    if (inrterview) {
+      let content = `Dear ${userData.userName},
+
+          We are pleased to inform you that you have been made some updates for an HR interview for the ${jobData.job_title} position at ${jobData.companyName}. Your application was reviewed by ${interviewer} on ${date}. Please prepare for the interview, taking note of the preferred requirements outlined.
+          
+          Here are the details for the interview: ${requirement}.
+          
+          Best regards,
+          ${jobData.companyName}
+        `;
+      sendMail(userData.email, "HireUp interview updated", content);
+      return res.status(200).json({
+        updated: true,
+        message: "Interview ReScheduled successfully..",
+      });
+    } else {
+      return res
+        .status(402)
+        .json({ updated: false, message: "Something error while updation!" });
+    }
+  } catch (error) {}
+};

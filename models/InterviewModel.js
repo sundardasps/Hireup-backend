@@ -4,7 +4,7 @@ const interviewSchema = mongoose.Schema({
   jobId: {
     type: String,
   },
-  userId: {
+  userId:{
     type: String,
   },
   applicationId: {
@@ -22,6 +22,22 @@ const interviewSchema = mongoose.Schema({
   requirements: {
     type: String,
   },
+  userName: {
+    type: String,
+  },
+  userDp: {
+    type: String,
+  },
+  userEmail: {
+    type: String,
+  },
+  userTitle: {
+    type: String,
+  },
+  userNumber: {
+    type: String,
+  },
+
 },{
   timestamps: true,
 });

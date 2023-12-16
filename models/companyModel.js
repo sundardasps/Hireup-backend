@@ -68,6 +68,10 @@ const companySchema = new mongoose.Schema({
   jobs:{
     type:Array,
     default:[]
+  },
+  is_payment:{
+    type:Number,
+    default:0,
   }
 });
 
