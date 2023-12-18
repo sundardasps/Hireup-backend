@@ -26,6 +26,7 @@ import {
   scheduleInterview,
   getsheduledInterviews,
   reScheduleInterview,
+  stripePaymentInstance,
 } from "../controllers/companyControllers/companyController.js";
 
 import { companyAuth } from "../middleWares/auth.js";
@@ -66,7 +67,6 @@ companyRoute.get("/getscheduleInterview",companyAuth,getsheduledInterviews)
 companyRoute.patch("/reScheduleInterview",companyAuth,reScheduleInterview)
 
 
-
-
+companyRoute.post("/create-payment-intent",companyAuth,stripePaymentInstance)
 
 export default companyRoute;

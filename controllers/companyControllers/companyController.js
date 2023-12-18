@@ -8,6 +8,9 @@ import categoryDb from "../../models/categoryModel.js";
 import userApplicationDb from "../../models/jobApply.js";
 import sendMail from "../../utils/sendMails.js";
 import intervieweDb from "../../models/InterviewModel.js";
+import stripe from 'stripe';
+
+
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
 export const addcompanyFullDetails = async (req, res) => {
@@ -708,3 +711,29 @@ export const reScheduleInterview = async (req, res) => {
     }
   } catch (error) {}
 };
+
+
+//------------------------------------------ Stripe payment ----------------------------------------//
+
+export const stripePaymentInstance = async (req,res)=>{
+
+  try {
+    const {price,duration} = req.body
+    // secret API
+    const stripeInstance = stripe('sk_test_51OOFpzSAq5W4cCoESKuIvtf46fgZnYzBhrQ7yf5x3MRAcbFDQpVUQYK6cr5mEDDJKiAWSxrgCICUAtGdqvm01ZFW00XBgwaZf7');
+    const paymentIntent = await stripeInstance.paymentIntents.create({
+      amount: price*100,
+      currency: "inr",
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+    if(paymentIntent){
+
+      return res.status(200).json({ status: true,
+        message: "payment data",clientSecret: paymentIntent.client_secret})
+    }
+  } catch (error) {
+   console.log(error); 
+  }
+} 
