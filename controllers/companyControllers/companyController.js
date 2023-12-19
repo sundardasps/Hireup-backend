@@ -609,11 +609,11 @@ export const scheduleInterview = async (req, res) => {
     } else {
       const userData = await userDb.findOne({ _id: userId });
       const applicationsId = userData.appliedJobs;
-      const application = await userApplicationDb.findOne({
+      const application = await userApplicationDb.findOneAndUpdate({
         _id: applicationsId,
         userId,
         jobId,
-      });
+      },{ $set: { status: "sheduled" } });
       const jobData = await jobDb.findOne({ _id: jobId });
       const inrterview = await intervieweDb({
         date,

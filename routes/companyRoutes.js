@@ -28,10 +28,10 @@ import {
   reScheduleInterview,
   stripePaymentInstance,
 } from "../controllers/companyControllers/companyController.js";
-
 import { companyAuth } from "../middleWares/auth.js";
 import upload from "../middleWares/multer.js";
-
+import {companyChats,companyCreateChat,companyFindChat, getSingleUser,} from '../controllers/chatControllers/chatController.js'
+import {companyAddMessage,companyGetMessages} from '../controllers/chatControllers/messageController.js'
 const companyRoute = express();
 
 companyRoute.post("/register", companyRegister);
@@ -68,5 +68,11 @@ companyRoute.patch("/reScheduleInterview",companyAuth,reScheduleInterview)
 
 
 companyRoute.post("/create-payment-intent",companyAuth,stripePaymentInstance)
+
+//----------------------------Company chat --------------------//
+companyRoute.get("/chat/:currentUserId",companyAuth,companyChats)
+companyRoute.get("/getSingleUser/:userId",companyAuth,getSingleUser)
+companyRoute.post("/companyAddMessage",companyAuth,companyAddMessage,)
+companyRoute.get("/companyGetMessages/:chatId",companyAuth,companyGetMessages)
 
 export default companyRoute;

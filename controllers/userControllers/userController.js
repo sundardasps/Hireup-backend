@@ -579,7 +579,7 @@ export const checkJobAppliedStatus = async (req, res) => {
     const applicationStatus =  application.status
 
     if (applicationStatus) {
-      return res.status(200).json({ status: applicationStatus});
+      return res.status(200).json({ application, status: applicationStatus});
     } else {
       return res.status(400).json({ status: applicationStatus});
     }

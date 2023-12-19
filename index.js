@@ -3,9 +3,9 @@ import express from 'express'
 import env from 'dotenv'
 import cors from 'cors'
 import mongoose from 'mongoose'
+import {app,server} from './socket/socket.js'
 
 
-const app = express();
 env.config()
 
 mongoose.connect("mongodb://127.0.0.1:27017/react-secondProject")
@@ -24,7 +24,7 @@ import adminRoute from './routes/adminRoutes.js'
 
 const corsOptions = {
   origin: "http://localhost:5173",
-  methos: ["GET,POST","PUT"]
+  methos: ["GET", "POST", "PUT", "PATCH"]
 };
 app.use(cors(corsOptions));
 
@@ -37,7 +37,6 @@ app.use("/admin", adminRoute);
 //----------------------------------Server------------------------------//
 
 
-
-app.listen(process.env.port, () => {
+server.listen(process.env.port, () => {
   console.log(`server started running in ${process.env.port}`);
 });

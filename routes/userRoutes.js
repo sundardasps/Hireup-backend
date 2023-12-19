@@ -30,7 +30,6 @@ import {
 } from "../controllers/userControllers/userController.js";
 
 import {findChat,createChat,userChats,getSingleCompany} from '../controllers/chatControllers/chatController.js'
-
 import {getMessages,addMessage} from '../controllers/chatControllers/messageController.js'
 
 import { userAuth } from "../middleWares/auth.js";
@@ -72,11 +71,12 @@ userRoute.get("/getAllCompany",getAllCompany);
 
 
 //----------------------------User chat --------------------//
-userRoute.get("/chat",userAuth,userChats)
+userRoute.get("/chat:currentUserId",userAuth,userChats)
 userRoute.get("/getSingleCompany/:companyId",userAuth,getSingleCompany)
-
 userRoute.post("/addMessage",userAuth,addMessage)
 userRoute.get("/getMessage/:chatId",userAuth,getMessages)
+userRoute.post("/createChat",userAuth,createChat)
+
 
 
 
