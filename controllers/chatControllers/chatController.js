@@ -73,15 +73,22 @@ export const getSingleCompany = async (req,res) =>{
 export const companyCreateChat = async (req, res) => {
     
   try {
-    const newChat = new chatModel({
-      members: [req.headers.userId, req.body.receiverId],
-    });
-  const result = await newChat.save();
-  res.status(200).json(result);
-} catch (error) {
+    const currentuserId =req.body.userId
+    const receiverId =req.body.companyId
+      const exist = await chatModel.findOne({members:{$all:[currentuserId,receiverId]}})
+      if(exist){
+      res.status(200).json({result:exist});
+      }else{
+        const newChat = new chatModel({
+          members: [currentuserId, receiverId],
+        });
+      const result = await newChat.save();
+      res.status(200).json(result);
+      }
+}catch(error){
   console.log(error);
 }
-};
+}
 
 //------Comapany all section--------//
 

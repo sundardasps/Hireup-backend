@@ -70,6 +70,7 @@ companyRoute.patch("/reScheduleInterview",companyAuth,reScheduleInterview)
 companyRoute.post("/create-payment-intent",companyAuth,stripePaymentInstance)
 
 //----------------------------Company chat --------------------//
+companyRoute.post("/companyCreateChat",companyAuth,companyCreateChat)
 companyRoute.get("/chat/:currentUserId",companyAuth,companyChats)
 companyRoute.get("/getSingleUser/:userId",companyAuth,getSingleUser)
 companyRoute.post("/companyAddMessage",companyAuth,companyAddMessage,)
