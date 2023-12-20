@@ -8,8 +8,7 @@ import categoryDb from "../../models/categoryModel.js";
 import userApplicationDb from "../../models/jobApply.js";
 import sendMail from "../../utils/sendMails.js";
 import intervieweDb from "../../models/InterviewModel.js";
-import stripe from 'stripe';
-
+import stripe from "stripe";
 
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
@@ -609,11 +608,14 @@ export const scheduleInterview = async (req, res) => {
     } else {
       const userData = await userDb.findOne({ _id: userId });
       const applicationsId = userData.appliedJobs;
-      const application = await userApplicationDb.findOneAndUpdate({
-        _id: applicationsId,
-        userId,
-        jobId,
-      },{ $set: { status: "sheduled" } });
+      const application = await userApplicationDb.findOneAndUpdate(
+        {
+          _id: applicationsId,
+          userId,
+          jobId,
+        },
+        { $set: { status: "sheduled" } }
+      );
       const jobData = await jobDb.findOne({ _id: jobId });
       const inrterview = await intervieweDb({
         date,
@@ -712,28 +714,30 @@ export const reScheduleInterview = async (req, res) => {
   } catch (error) {}
 };
 
-
 //------------------------------------------ Stripe payment ----------------------------------------//
 
-export const stripePaymentInstance = async (req,res)=>{
-
+export const stripePaymentInstance = async (req, res) => {
   try {
-    const {price,duration} = req.body
-    // secret API
-    const stripeInstance = stripe('sk_test_51OOFpzSAq5W4cCoESKuIvtf46fgZnYzBhrQ7yf5x3MRAcbFDQpVUQYK6cr5mEDDJKiAWSxrgCICUAtGdqvm01ZFW00XBgwaZf7');
-    const paymentIntent = await stripeInstance.paymentIntents.create({
-      amount: price*100,
-      currency: "inr",
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    });
-    if(paymentIntent){
+    const { price } = req.body;
 
-      return res.status(200).json({ status: true,
-        message: "payment data",clientSecret: paymentIntent.client_secret})
-    }
+    const clientId = req.headers.companyId;
+    const stripeInstence = stripe(
+      "sk_test_51OOFpzSAq5W4cCoESKuIvtf46fgZnYzBhrQ7yf5x3MRAcbFDQpVUQYK6cr5mEDDJKiAWSxrgCICUAtGdqvm01ZFW00XBgwaZf7"
+    );
+    const session = await stripeInstence.checkout.sessions.create({
+      mode: "subscription",
+      line_items: [
+        {
+          price: price.id,
+          quantity: 1,
+        },
+      ],
+      success_url: "http://localhost:5173/company/paymentSuccess",
+      cancel_url: "http://localhost:5173/company/paymentfailed",
+    });
+
+    res.status(200).json({ session });
   } catch (error) {
-   console.log(error); 
+    console.log(error);
   }
-} 
+};
