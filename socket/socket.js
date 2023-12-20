@@ -1,14 +1,18 @@
 import { Server } from "socket.io";
 import express from "express";
 import http from "http";
+import cors from 'cors'
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5173",  // Allow requests from this origin
+    methods: ["GET", "POST","PUT"],
+    credentials: true,
   },
 });
+
 
 let activeUsers = [];
 
@@ -20,7 +24,7 @@ io.on("connection", (socket) => {
     }
     io.emit("get-users",activeUsers);
   });
-
+    
 
 
 
@@ -33,16 +37,17 @@ io.on("connection", (socket) => {
 
   socket.on("send-message", (data) => {
     const { recieverId } = data;
+    console.log("Received send-message:", data);
     console.log("Active Users:", activeUsers);
     console.log("Sending message to receiver:", recieverId);
     const user = activeUsers.find((user) => user.userId === recieverId);
     if (user) {
-        io.to(user.socketId).emit("receive-message",data);
-      }
+      io.to(user.socketId).emit("receive-message", data);
+    }
   });
  
-
-
 });
 
-export { app, server };
+
+
+export { app,server };

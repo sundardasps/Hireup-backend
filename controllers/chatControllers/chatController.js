@@ -4,11 +4,10 @@ import userDb from '../../models/userModel.js'
 //------------------Users section----------------------------------------//
 
 export const createChat = async (req, res) => {
-    try {
-      const currentuserId =req.body.userId
-      const receiverId =req.body.companyId
-     
-      const exist = await chatModel.findOne({members:{$all:[currentuserId, receiverId]}})
+  try {
+    const currentuserId =req.body.userId
+    const receiverId =req.body.companyId
+      const exist = await chatModel.findOne({members:{$all:[currentuserId,receiverId]}})
       if(exist){
       res.status(200).json({result:exist});
       }else{
@@ -32,7 +31,7 @@ export const userChats = async (req, res) => {
     const {currentUserId} = req.params
     const chats = await chatModel.find({
       members: { $in: [currentUserId] },
-    });
+    })
     if(chats){
     return res.status(200).json(chats);
     }
@@ -69,7 +68,7 @@ export const getSingleCompany = async (req,res) =>{
      }
 }
 
-//--------------------Company section----------------------------------------//
+//--------------------------------------------Company section----------------------------------------//
 
 export const companyCreateChat = async (req, res) => {
     

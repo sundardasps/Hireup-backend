@@ -10,7 +10,7 @@ export const addMessage = async (req, res) => {
       text,
     });
     const result = await message.save();
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.log(error);
   }

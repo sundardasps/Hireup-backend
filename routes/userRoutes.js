@@ -27,6 +27,8 @@ import {
   appliedJobList,
   checkJobappliedOrNot,
   checkJobAppliedStatus,
+  saveUserJob,
+  getUserSavedJobs
 } from "../controllers/userControllers/userController.js";
 
 import {findChat,createChat,userChats,getSingleCompany} from '../controllers/chatControllers/chatController.js'
@@ -76,6 +78,11 @@ userRoute.get("/getSingleCompany/:companyId",userAuth,getSingleCompany)
 userRoute.post("/addMessage",userAuth,addMessage)
 userRoute.get("/getMessage/:chatId",userAuth,getMessages)
 userRoute.post("/createChat",userAuth,createChat)
+
+//----------------------------User Saved jobs --------------------//
+userRoute.put("/saveJobs/:jobId",userAuth,saveUserJob)
+userRoute.get("/getSavedJobs",userAuth,getUserSavedJobs)
+
 
 
 

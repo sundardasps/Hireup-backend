@@ -587,3 +587,37 @@ export const checkJobAppliedStatus = async (req, res) => {
     console.log(error);
   }
 };
+
+
+//------------------------------------ User save jobs -------------------------------------//
+
+export const saveUserJob = async (req,res) =>{
+
+     try {
+        const exist = await userDb.findOne({_id:req.headers.userId,savedJobs:{$in:[req.params.jobId]}})
+
+        if(exist){
+            return res.status(200).json({saved:false,message:"Job already saved!"})
+        }else{
+        const userData = await userDb.findOneAndUpdate({_id:req.headers.userId},{$push:{savedJobs:req.params.jobId}})
+        return res.status(200).json({saved:true,message:"Job already saved!"})
+        }
+        console.log(userData);
+     } catch (error) {
+      
+     }
+
+}
+
+//------------------------------------Get User save jobs -------------------------------------//
+
+export const getUserSavedJobs = async (req,ers) =>{
+
+  try {
+    const userData = await userDb.findOne({_id:req.headers.userId})
+    const jobsData = await jobDb.find(userData.savedJobs)
+  } catch (error) {
+    
+  }
+}
+
