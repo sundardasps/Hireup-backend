@@ -718,22 +718,27 @@ export const reScheduleInterview = async (req, res) => {
 
 export const stripePaymentInstance = async (req, res) => {
   try {
-    const { price } = req.body;
 
+    const { price } = req.body;
+    const subscriptionType = price.interval
     const clientId = req.headers.companyId;
     const stripeInstence = stripe(
-      "sk_test_51OOFpzSAq5W4cCoESKuIvtf46fgZnYzBhrQ7yf5x3MRAcbFDQpVUQYK6cr5mEDDJKiAWSxrgCICUAtGdqvm01ZFW00XBgwaZf7"
+      "sk_test_51OPm1SSEvDV8XVWTIhyCIMDhqJw8ueWYd8F26axdF8DYEdzff7hWU9f1dOsybJF5yHtw3VWvcBlbEyRaw7N6ZelB00EfrGJRnD"
     );
+
     const session = await stripeInstence.checkout.sessions.create({
-      mode: "subscription",
+      billing_address_collection: 'auto',
       line_items: [
         {
           price: price.id,
+          // For metered billing, do not pass quantity
           quantity: 1,
+  
         },
       ],
-      success_url: "http://localhost:5173/company/paymentSuccess",
-      cancel_url: "http://localhost:5173/company/paymentfailed",
+      mode: 'subscription',
+      success_url: `${process.env.STRIPE_PAYMENT_ENDPOINT}/?success=true&session_id=${subscriptionType}`,
+      cancel_url: `${process.env.STRIPE_PAYMENT_ENDPOINT}?canceled=true`,
     });
 
     res.status(200).json({ session });

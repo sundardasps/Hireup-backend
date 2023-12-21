@@ -67,7 +67,7 @@ companyRoute.get("/getscheduleInterview",companyAuth,getsheduledInterviews)
 companyRoute.patch("/reScheduleInterview",companyAuth,reScheduleInterview)
 
 
-companyRoute.post("/create-payment-intent",companyAuth,stripePaymentInstance)
+companyRoute.post("/create-checkout-session",companyAuth,stripePaymentInstance)
 
 //----------------------------Company chat --------------------//
 companyRoute.post("/companyCreateChat",companyAuth,companyCreateChat)
