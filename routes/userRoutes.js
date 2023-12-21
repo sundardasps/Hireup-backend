@@ -28,7 +28,8 @@ import {
   checkJobappliedOrNot,
   checkJobAppliedStatus,
   saveUserJob,
-  getUserSavedJobs
+  getUserSavedJobs,
+  unSaveJobs
 } from "../controllers/userControllers/userController.js";
 
 import {findChat,createChat,userChats,getSingleCompany} from '../controllers/chatControllers/chatController.js'
@@ -36,6 +37,7 @@ import {getMessages,addMessage} from '../controllers/chatControllers/messageCont
 
 import { userAuth } from "../middleWares/auth.js";
 import upload from "../middleWares/multer.js";
+
 const userRoute = express();
 
 userRoute.post("/sigUp", userSignUp);
@@ -82,6 +84,8 @@ userRoute.post("/createChat",userAuth,createChat)
 //----------------------------User Saved jobs --------------------//
 userRoute.put("/saveJobs/:jobId",userAuth,saveUserJob)
 userRoute.get("/getSavedJobs",userAuth,getUserSavedJobs)
+userRoute.get("/unsaveJobs/:jobId",userAuth,unSaveJobs)
+
 
 
 

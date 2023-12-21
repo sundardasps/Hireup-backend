@@ -571,53 +571,82 @@ export const checkJobAppliedStatus = async (req, res) => {
     const { userId, jobId } = req.query;
     const userData = await userDb.findOne({ _id: userId });
     const applicationId1 = userData.appliedJobs;
-    const jobData = await jobDb.findOne({_id:jobId,});
-    const applicationId2 = jobData.appliedUsers
+    const jobData = await jobDb.findOne({ _id: jobId });
+    const applicationId2 = jobData.appliedUsers;
 
-    const commonValuesId = applicationId1.filter(value => applicationId2.includes(value));
-    const application  = await applyJobDb.findOne({_id:commonValuesId})
-    const applicationStatus =  application.status
+    const commonValuesId = applicationId1.filter((value) =>
+      applicationId2.includes(value)
+    );
+    const application = await applyJobDb.findOne({ _id: commonValuesId });
+    const applicationStatus = application.status;
 
     if (applicationStatus) {
-      return res.status(200).json({ application, status: applicationStatus});
+      return res.status(200).json({ application, status: applicationStatus });
     } else {
-      return res.status(400).json({ status: applicationStatus});
+      return res.status(400).json({ status: applicationStatus });
     }
   } catch (error) {
     console.log(error);
   }
 };
 
-
 //------------------------------------ User save jobs -------------------------------------//
 
-export const saveUserJob = async (req,res) =>{
+export const saveUserJob = async (req, res) => {
+  try {
+    const exist = await userDb.findOne({
+      _id: req.headers.userId,
+      savedJobs: { $in: [req.params.jobId] },
+    });
 
-     try {
-        const exist = await userDb.findOne({_id:req.headers.userId,savedJobs:{$in:[req.params.jobId]}})
-
-        if(exist){
-            return res.status(200).json({saved:false,message:"Job already saved!"})
-        }else{
-        const userData = await userDb.findOneAndUpdate({_id:req.headers.userId},{$push:{savedJobs:req.params.jobId}})
-        return res.status(200).json({saved:true,message:"Job already saved!"})
-        }
-        console.log(userData);
-     } catch (error) {
-      
-     }
-
-}
+    if (exist) {
+      return res
+        .status(200)
+        .json({ saved: false, message: "Job already saved!" });
+    } else {
+      const userData = await userDb.findOneAndUpdate(
+        { _id: req.headers.userId },
+        { $push: { savedJobs: req.params.jobId } }
+      );
+      return res.status(200).json({ saved: true, message: "Job saved." });
+    }
+    console.log(userData);
+  } catch (error) {}
+};
 
 //------------------------------------Get User save jobs -------------------------------------//
 
-export const getUserSavedJobs = async (req,ers) =>{
-
+export const getUserSavedJobs = async (req, res) => {
   try {
-    const userData = await userDb.findOne({_id:req.headers.userId})
-    const jobsData = await jobDb.find(userData.savedJobs)
+    const userData = await userDb.findOne({ _id: req.headers.userId });
+    const jobIds = userData.savedJobs;
+    console.log(jobIds);
+    const jobsData = await jobDb.find({ _id: jobIds });
+    if (jobsData) {
+      return res.status(200).json({ data: jobsData });
+    } else {
+      return res.status(402).json({ data: [] });
+    }
   } catch (error) {
-    
+    console.log(error);
   }
-}
+};
 
+//------------------------------------unsave User save jobs -------------------------------------//
+
+export const unSaveJobs = async (req, res) => {
+  try {
+    console.log(req.params.jobId, "ooooooooooooooooo");
+    const jobData = await userDb.updateOne(
+      { _id: req.headers.userId },
+      { $pull: { savedJobs: req.params.jobId } }
+    );
+    if (jobData.modifiedCount === 1) {
+      return res.status(200).json({ data: jobData });
+    } else {
+      return res.status(402).json({ data: [] });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
