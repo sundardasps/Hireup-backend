@@ -8,8 +8,8 @@ const sendMail = async (email,subject,url) => {
       secure: false,
       requireTLS: true,
       auth: {
-        user: process.env.AuthEmail,
-        pass: process.env.AuthPassword,
+        user: process.env.AUTHEMAIL,
+        pass: process.env.AUTHPASSWORD,
       },
     });
 
@@ -20,7 +20,7 @@ const sendMail = async (email,subject,url) => {
     });
      console.log(url,"fsdfsfdsfsffg");
     const mailOptions = {
-      from: process.env.AuthEmail,
+      from: process.env.AUTHEMAIL,
       to: email,
       subject:subject,
       text:url

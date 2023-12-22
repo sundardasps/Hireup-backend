@@ -31,7 +31,7 @@ export const userChats = async (req, res) => {
     const {currentUserId} = req.params
     const chats = await chatModel.find({
       members: { $in: [currentUserId] },
-    })
+    } )
     if(chats){
     return res.status(200).json(chats);
     }

@@ -23,7 +23,7 @@ import adminRoute from './routes/adminRoutes.js'
 //-------------------------------Cors config----------------------------//
 
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.FRONTEND_ENDPOINT,
   methos: ["GET", "POST", "PUT", "PATCH"]
 };
 app.use(cors(corsOptions));
@@ -37,6 +37,6 @@ app.use("/admin", adminRoute);
 //----------------------------------Server------------------------------//
 
 
-server.listen(process.env.port, () => {
-  console.log(`server started running in ${process.env.port}`);
+server.listen(process.env.PORT, () => {
+  console.log(`server started running in ${process.env.PORT}`);
 });

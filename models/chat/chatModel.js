@@ -5,6 +5,9 @@ const chatSchema = mongoose.Schema(
     members: {
       type: Array,
     },
+    last_Message:{
+      type:String
+    }
   },
   {
     timestamps: true,
