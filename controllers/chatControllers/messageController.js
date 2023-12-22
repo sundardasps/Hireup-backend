@@ -1,15 +1,20 @@
 import messageModel from "../../models/chat/messageModel.js";
-
+import chatModel from '../../models/chat/chatModel.js'
 //----------------------------User side --------------------------//
 export const addMessage = async (req, res) => {
   try {
-    const { chatId, senderId, text } = req.body;
+    const { chatId, senderId, text,recieverId } = req.body;
+
     const message = new messageModel({
       chatId,
       senderId,
       text,
     });
     const result = await message.save();
+    const AddLastMessage = await chatModel.findOneAndUpdate({
+      members: { $all: [senderId, recieverId] },
+    },{$set:{last_Message:text}});
+
     return res.status(200).json(result);
   } catch (error) {
     console.log(error);
