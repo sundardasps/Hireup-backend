@@ -62,7 +62,6 @@ export const getSingleCompany = async (req,res) =>{
      const chat = await chatModel.findOne({
       members: { $all: [currentUser, req.params.companyId] },
      }); 
-     console.log(chat,"ooooooooooo");
       if(companyData){
         return res.status(200).json({companyData,chat})
       }else{
@@ -128,9 +127,13 @@ try {
 
 export const getSingleUser = async (req,res) =>{
    try{
+    const currentUser = String(req.headers.companyId) 
    const companyData = await userDb.findOne({_id:req.params.userId})
+   const chat = await chatModel.findOne({
+    members: { $all: [currentUser, req.params.userId] },
+   }); 
     if(companyData){
-      return res.status(200).json(companyData)
+      return res.status(200).json({companyData,chat})
     }else{
       return res.status(402).json()
     }

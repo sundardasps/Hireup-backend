@@ -4,18 +4,20 @@ import chatModel from '../../models/chat/chatModel.js'
 export const addMessage = async (req, res) => {
   try {
     const { chatId, senderId, text,recieverId } = req.body;
-
+    const AddLastMessage = await chatModel.findOneAndUpdate({
+      members: { $all: [senderId, recieverId] },
+    },{$set:{last_Message:text}});
+   if(AddLastMessage){
     const message = new messageModel({
       chatId,
       senderId,
       text,
     });
     const result = await message.save();
-    const AddLastMessage = await chatModel.findOneAndUpdate({
-      members: { $all: [senderId, recieverId] },
-    },{$set:{last_Message:text}});
-
     return res.status(200).json(result);
+ }
+    
+
   } catch (error) {
     console.log(error);
   }
@@ -33,14 +35,19 @@ export const getMessages = async (req,res) =>{
 //----------------------------Company side --------------------------//
 export const companyAddMessage = async (req, res) => {
   try {
-    const { chatId, senderId, text } = req.body;
+    const { chatId, senderId, text,recieverId } = req.body;
+    const AddLastMessage = await chatModel.findOneAndUpdate({
+      members: { $all: [senderId, recieverId] },
+    },{$set:{last_Message:text}})
+   if(AddLastMessage){
     const message = new messageModel({
       chatId,
       senderId,
       text,
     });
     const result = await message.save();
-    res.status(200).json(result);
+    return res.status(200).json(result);
+ }
   } catch (error) {
     console.log(error);
   }
