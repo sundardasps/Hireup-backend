@@ -29,7 +29,9 @@ import {
   checkJobAppliedStatus,
   saveUserJob,
   getUserSavedJobs,
-  unSaveJobs
+  unSaveJobs,
+  addResume,
+  deleteResume
 } from "../controllers/userControllers/userController.js";
 
 import {findChat,createChat,userChats,getSingleCompany} from '../controllers/chatControllers/chatController.js'
@@ -65,6 +67,11 @@ userRoute.post("/deleteExperience/:experience",userAuth,deleteExperience);
 userRoute.post("/addEducation",userAuth,addEducation)
 userRoute.patch("/editEducation",userAuth,editEducation)
 userRoute.put("/deleteEducation",userAuth,deleteEducation)
+
+userRoute.post("/addResume",userAuth,upload.single("pdfFile"),addResume)
+userRoute.delete("/deleteResume/:resumeId",userAuth,deleteResume)
+
+
 
 userRoute.post("/applyJOb",userAuth,upload.single("resume"),applyJob)
 userRoute.get("/getAppliedJobs",userAuth,appliedJobList)

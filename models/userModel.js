@@ -74,6 +74,9 @@ const userSchema = new mongoose.Schema({
   savedJobs:{
     type:Array,
   },
+  resumes:{
+    type:Array,
+  },
   
 
 });

@@ -6,6 +6,7 @@ import companyDb from "../../models/companyModel.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import applyJobDb from "../../models/jobApply.js";
 import sendMail from "../../utils/sendMails.js";
+import resumeDb from "../../models/resumeModel.js";
 import e from "express";
 //--------------------------------------------------Get cateogry----------------------------------------//
 
@@ -74,16 +75,19 @@ export const getAllJobs = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const exist = await userDb.findOne({ _id: req.headers.userId });
+    const resumeIds = exist.resumes
+    const resumesData = await resumeDb.find({_id:resumeIds})
+  
     let total = 0;
     if (exist && exist.experience) {
-      exist.experience.forEach((value, index) => {
+        exist.experience.forEach((value, index) => {
         total = total + Number(value.match(/\d+/g));
       });
     }
     if (exist) {
-      return res.status(200).json({ fetched: true, exist, total });
+      return res.status(200).json({ fetched: true, exist, total ,resume:resumesData});
     } else {
-      return res.status(200).json({ fetched: false, data: [] });
+      return res.status(200).json({ fetched: false, data: [] ,resume:[]});
     }
   } catch (error) {
     console.log(error);
@@ -323,7 +327,6 @@ export const deleteExperience = async (req, res) => {
   try {
     const { experience } = req.params;
     const trimmedExperience = experience.trim();
-    console.log(typeof trimmedExperience);
     const updated = await userDb.updateOne(
       { _id: req.headers.userId },
       { $pull: { experience: trimmedExperience } }
@@ -620,7 +623,6 @@ export const getUserSavedJobs = async (req, res) => {
   try {
     const userData = await userDb.findOne({ _id: req.headers.userId });
     const jobIds = userData.savedJobs;
-    console.log(jobIds);
     const jobsData = await jobDb.find({ _id: jobIds });
     if (jobsData) {
       return res.status(200).json({ data: jobsData });
@@ -636,7 +638,7 @@ export const getUserSavedJobs = async (req, res) => {
 
 export const unSaveJobs = async (req, res) => {
   try {
-    console.log(req.params.jobId, "ooooooooooooooooo");
+
     const jobData = await userDb.updateOne(
       { _id: req.headers.userId },
       { $pull: { savedJobs: req.params.jobId } }
@@ -650,3 +652,73 @@ export const unSaveJobs = async (req, res) => {
     console.log(error);
   }
 };
+
+//--------------------------------Save resume ----------------------------//
+
+export const addResume = async (req, res) => {
+  try {
+    const img = req.file.path;
+    const uploadedImage = await uploadToCloudinary(img, "userResume");
+    const lastSlashIndex = uploadedImage.url.lastIndexOf('/');
+    const filename = lastSlashIndex !== -1 ? uploadedImage.url.substring(lastSlashIndex + 1) : null;
+    if (filename) {
+      const resumeAdded = new resumeDb({
+        userId:req.headers.userId,
+        resume: uploadedImage.url,
+        resumeName:filename
+      })
+      const savedData = await resumeAdded.save();
+      const stringId =  String(savedData._id )
+      const userData = await userDb.findOneAndUpdate(
+        { _id: req.headers.userId },
+        { $push: { resumes: stringId } }
+      );
+      if (userData) {
+        return res
+          .status(200)
+          .json({ created: true, message: "Resume uploaded" });
+      } else {
+        return res
+          .status(200)
+          .json({ created: false, message: "Resume uploaded failed!" });
+      }
+    } else {
+      return res
+        .status(200)
+        .json({ created: false, message: "Resume uploaded failed!" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//--------------------------------Delete resume ----------------------------//
+
+export const deleteResume = async (req,res) =>{
+ try {
+      
+       const {resumeId} = req.params
+       const deleteFromUser = await userDb.findByIdAndUpdate({_id:req.headers.userId},{$pull:{resumes:resumeId}})
+       if(deleteFromUser){
+         const resumeData = await resumeDb.findOne({_id:resumeId})
+         const resume = resumeData.resume
+         const match = resume.match(/\/v\d+\/(.+?)\./);
+         const publicId = match ? match[1] : null;
+         console.log(publicId,"kkkkkkkk");
+         cloudinary.v2.uploader
+         .destroy(publicId)
+         .then((res) => console.log("resume image deleted"));
+         const deleteResume = await resumeDb.findOneAndDelete({_id:resumeId})
+         if(deleteResume){
+           return res.status(200).json({deleted:true,message:"deleted."})
+         }else{
+          return res.status(200).json({deleted:false,message:"Somthing error while deleting."})
+         }
+       }
+
+ } catch (error) {
+  console.log(error);
+ }
+}
+
+
