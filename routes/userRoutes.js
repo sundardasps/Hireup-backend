@@ -31,7 +31,7 @@ import {
   getUserSavedJobs,
   unSaveJobs,
   addResume,
-  deleteResume
+  deleteResume,getUserResumes
 } from "../controllers/userControllers/userController.js";
 
 import {findChat,createChat,userChats,getSingleCompany} from '../controllers/chatControllers/chatController.js'
@@ -70,6 +70,8 @@ userRoute.put("/deleteEducation",userAuth,deleteEducation)
 
 userRoute.post("/addResume",userAuth,upload.single("pdfFile"),addResume)
 userRoute.delete("/deleteResume/:resumeId",userAuth,deleteResume)
+userRoute.get("/getUserResumes",userAuth,getUserResumes)
+
 
 
 

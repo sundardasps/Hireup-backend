@@ -61,6 +61,9 @@ const post = mongoose.Schema({
  appliedUsers:{
   type:Array,
   default:[]
+ },
+ field:{
+  type:String
  }
 });
 

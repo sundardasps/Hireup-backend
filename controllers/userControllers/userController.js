@@ -456,15 +456,23 @@ export const deleteEducation = async (req, res) => {
 
 export const applyJob = async (req, res) => {
   try {
-    const { companyId, jobId } = req.body;
+    const { companyId, jobId ,resume} = req.body;
+    let resumeUrl = ""
+    if(resume){
+      resumeUrl = resume
+    }else{
     const img = req.file.path;
     const uploadedImage = await uploadToCloudinary(img, "userResume");
-    if (uploadToCloudinary) {
+    resumeUrl=uploadedImage.url
+    }
+  
+
+    if (resumeUrl) {
       const applyJobData = new applyJobDb({
         jobId,
         companyId,
         userId: req.headers.userId,
-        resume: uploadedImage.url,
+        resume: resumeUrl,
       });
       const savedData = await applyJobData.save();
       if (savedData) {
@@ -719,6 +727,24 @@ export const deleteResume = async (req,res) =>{
  } catch (error) {
   console.log(error);
  }
+}
+
+//--------------------------------Delete resume ----------------------------//
+
+export const getUserResumes = async (req,res) =>{
+  try {
+    const exist = await userDb.findOne({ _id: req.headers.userId });
+    const resumeIds = exist.resumes
+    const resumesData = await resumeDb.find({_id:resumeIds})
+    if(resumesData){
+      console.log(resumesData);
+      return res.status(200).json(resumesData)
+    }else{
+      return res.status(402).json(resumesData)
+    }
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 

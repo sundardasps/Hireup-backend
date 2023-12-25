@@ -63,8 +63,9 @@ export const companyAddPost = async (req, res) => {
       skills,
       responsibilities,
       endTime,
-      salery,
+      salery,field,
     } = req.body;
+    console.log(req.body,"kkkkkkkkkk");
     const id = req.headers.companyId;
     const company = await companyDb.findOne({ _id: id });
 
@@ -80,6 +81,7 @@ export const companyAddPost = async (req, res) => {
       companyImage: company.image,
       companyLocation: company.location,
       companyId: id,
+      field,
     });
     const companyData = await saveData.save();
     if (companyData) {
