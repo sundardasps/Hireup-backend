@@ -41,8 +41,7 @@ export const getAllJobs = async (req, res) => {
       }
     });
 
-    const { search, filter } = req.query;
-
+    const { search, filter,scroll } = req.query;
     let query = { is_delete: false };
 
     if (search) {
@@ -54,19 +53,26 @@ export const getAllJobs = async (req, res) => {
       ];
     }
 
+    
+
+    let limit = 7;
+    let skip = (scroll - 1) * 7;
+    const count = await jobDb.find(query).countDocuments();
+    const totalScrolls = Math.ceil(count/limit)
+   
     if (filter) {
+       skip = 0
       query.job_title = { $regex: new RegExp(filter, "i") };
     }
 
-    const allJobs = await jobDb.find(query).sort({ createdAt: -1 });
-
+    const allJobs = await jobDb.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit)
     if (allJobs) {
-      return res.status(200).json({ dataFetched: true, data: allJobs });
+      return res.status(200).json({ dataFetched: true, data: allJobs ,count,totalScrolls });
     } else {
-      return res.json({ dataFetched: false, data: allJobs });
+      return res.json({ dataFetched: false, data: allJobs,count,totalScrolls });
     }
   } catch (error) {
-    console.log(error);
+    console.log(error);  
   }
 };
 
@@ -621,7 +627,6 @@ export const saveUserJob = async (req, res) => {
       );
       return res.status(200).json({ saved: true, message: "Job saved." });
     }
-    console.log(userData);
   } catch (error) {}
 };
 
@@ -712,7 +717,6 @@ export const deleteResume = async (req,res) =>{
          const resume = resumeData.resume
          const match = resume.match(/\/v\d+\/(.+?)\./);
          const publicId = match ? match[1] : null;
-         console.log(publicId,"kkkkkkkk");
          cloudinary.v2.uploader
          .destroy(publicId)
          .then((res) => console.log("resume image deleted"));
@@ -737,7 +741,6 @@ export const getUserResumes = async (req,res) =>{
     const resumeIds = exist.resumes
     const resumesData = await resumeDb.find({_id:resumeIds})
     if(resumesData){
-      console.log(resumesData);
       return res.status(200).json(resumesData)
     }else{
       return res.status(402).json(resumesData)
