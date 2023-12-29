@@ -733,16 +733,14 @@ export const stripePaymentInstance = async (req, res) => {
       line_items: [
         {
           price: price.id,
-          // For metered billing, do not pass quantity
           quantity: 1,
-  
+
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.STRIPE_PAYMENT_ENDPOINT}/?success=true&session_id=${subscriptionType}`,
+      success_url: `${process.env.STRIPE_PAYMENT_ENDPOINT}?success=true&session_id=${subscriptionType}`,
       cancel_url: `${process.env.STRIPE_PAYMENT_ENDPOINT}?canceled=true`,
     });
-
     res.status(200).json({ session });
   } catch (error) {
     console.log(error);

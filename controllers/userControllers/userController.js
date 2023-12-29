@@ -7,7 +7,7 @@ import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import applyJobDb from "../../models/jobApply.js";
 import sendMail from "../../utils/sendMails.js";
 import resumeDb from "../../models/resumeModel.js";
-import e from "express";
+
 //--------------------------------------------------Get cateogry----------------------------------------//
 
 export const getCategory = async (req, res) => {
@@ -41,10 +41,27 @@ export const getAllJobs = async (req, res) => {
       }
     });
 
+    
     const { search, filter,scroll } = req.query;
     let query = { is_delete: false };
+    
+    //applied jobs finding
+    const userData = await userDb.findOne({ _id: req.headers.userId });
+    const appliedJobsId = userData.appliedJobs
+    const applications = await applyJobDb.find({_id:appliedJobsId})
+    const appliedJobs = applications.map((value)=>{
+       return value.jobId
+    })
+    query =  { _id: { $nin: appliedJobs } }
+
+
+    let limit = 7;
+    let skip = (scroll - 1) * 7;
+    const count = await jobDb.find(query).countDocuments();
+    const totalScrolls = Math.ceil(count/limit)
 
     if (search) {
+      skip = 0
       query.$or = [
         { job_title: { $regex: new RegExp(search, "i") } },
         { companyName: { $regex: new RegExp(search, "i") } },
@@ -52,13 +69,6 @@ export const getAllJobs = async (req, res) => {
         { job_type: { $regex: new RegExp(search, "i") } },
       ];
     }
-
-    
-
-    let limit = 7;
-    let skip = (scroll - 1) * 7;
-    const count = await jobDb.find(query).countDocuments();
-    const totalScrolls = Math.ceil(count/limit)
    
     if (filter) {
        skip = 0
@@ -66,7 +76,12 @@ export const getAllJobs = async (req, res) => {
     }
 
     const allJobs = await jobDb.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit)
+
     if (allJobs) {
+
+    
+
+
       return res.status(200).json({ dataFetched: true, data: allJobs ,count,totalScrolls });
     } else {
       return res.json({ dataFetched: false, data: allJobs,count,totalScrolls });
