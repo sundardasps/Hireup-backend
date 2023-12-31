@@ -65,6 +65,8 @@ const post = mongoose.Schema({
  field:{
   type:String
  }
+},{
+  timestamps:true
 });
 
 const jobs = mongoose.model("jobs", post);

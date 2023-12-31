@@ -55,8 +55,8 @@ export const getAllJobs = async (req, res) => {
     query =  { _id: { $nin: appliedJobs } }
 
 
-    let limit = 7;
-    let skip = (scroll - 1) * 7;
+    const limit = 6;
+    let skip = (scroll - 1) * 6;
     const count = await jobDb.find(query).countDocuments();
     const totalScrolls = Math.ceil(count/limit)
 
@@ -586,10 +586,10 @@ export const checkJobappliedOrNot = async (req, res) => {
       _id: jobId,
       appliedUsers: { $in: appliedJobsId },
     });
-    if (checkIsApplied) {
+    if (checkIsApplied) {    
       return res.status(200).json({ data: checkIsApplied, exist: true });
     } else {
-      return res.status(400).json({ data: checkIsApplied, exist: false });
+      return res.status(200).json({ data: checkIsApplied, exist: false });
     }
   } catch (error) {
     console.log(error);
@@ -764,5 +764,29 @@ export const getUserResumes = async (req,res) =>{
     console.log(error);
   }
 }
+
+
+//--------------------------------Get job details ----------------------------//
+
+export const jobFullDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const jobDetails = await jobDb.findOne({ _id: id });
+
+    if (jobDetails) {
+      return res
+        .status(200)
+        .json({ fetched: true, jobDetails, message: "Details fetched!" });
+    } else {
+      return res.json({
+        fetched: false,
+        jobDetails,
+        message: "Something error while fetching data",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 

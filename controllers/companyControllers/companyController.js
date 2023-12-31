@@ -730,17 +730,21 @@ export const stripePaymentInstance = async (req, res) => {
 
     const session = await stripeInstence.checkout.sessions.create({
       billing_address_collection: 'auto',
+
       line_items: [
         {
           price: price.id,
           quantity: 1,
-
+            
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.STRIPE_PAYMENT_ENDPOINT}?success=true&session_id=${subscriptionType}`,
-      cancel_url: `${process.env.STRIPE_PAYMENT_ENDPOINT}?canceled=true`,
+      success_url:`http://localhost:5173/company/status`,
+      cancel_url: `http://localhost:5173/company/status`,
+      // success_url:`http://localhost:5173/company/status?success=true&session_id=${subscriptionType}`,
+      // cancel_url: `http://localhost:5173/company/status?canceled=true`,
     });
+    console.log(session,"[[[[");
     res.status(200).json({ session });
   } catch (error) {
     console.log(error);
