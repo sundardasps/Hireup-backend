@@ -11,6 +11,7 @@ import {
   categoryList,
   titleBlockorUnblock,
   deleteSubcategory,
+  getDashboard
 } from "../controllers/adminControllers/adminController.js";
 
 import { adminAuth } from "../middleWares/auth.js";
@@ -33,5 +34,8 @@ adminRoute.get("/getTitle",adminAuth, getCategoryTitle);
 adminRoute.post("/addCategory",addCategory, addCategory);
 adminRoute.put('/catgoryBlockOrUnblock/:id',adminAuth,titleBlockorUnblock)
 adminRoute.post("/deleteSubcategory",adminAuth,deleteSubcategory);
+
+//-------------------------------------------Category section-------------------------------------//
+adminRoute.get("/getDashboard",adminAuth,getDashboard)
 
 export default adminRoute;

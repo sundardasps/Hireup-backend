@@ -1,6 +1,9 @@
 import userDb from "../../models/userModel.js";
 import companyDb from "../../models/companyModel.js";
 import categoryDb from "../../models/categoryModel.js";
+import jobDb from "../../models/companyPostModel.js"
+import applicationDb from "../../models/jobApply.js"
+
 import { query } from "express";
 
 //=====================================Users section====================================//
@@ -236,27 +239,50 @@ export const titleBlockorUnblock = async (req, res) => {
 
 //---------------- Sub category delete -------------------//
 
-export const deleteSubcategory = async (req,res) =>{
-      
+export const deleteSubcategory = async (req, res) => {
   try {
-        const {value,id} = req.body
-        const trimmedSubcategory = value.trim()
-        console.log(typeof trimmedExperience);
-        const updated =  await categoryDb.updateOne(
-          { _id:id },
-          { $pull: { category : value } }
-        );
-        console.log(updated);
-        if(updated.modifiedCount === 1){
-          return res.status(200).json({update:true,message:"Deleted"})
-        }else{
-          return res.json({update:false,message:"somthing error while delete subcategory!"})
-        }
-       
-   } catch (error) {
-     console.log(error);
+    const { value, id } = req.body;
+    const trimmedSubcategory = value.trim();
+    console.log(typeof trimmedExperience);
+    const updated = await categoryDb.updateOne(
+      { _id: id },
+      { $pull: { category: value } }
+    );
+    console.log(updated);
+    if (updated.modifiedCount === 1) {
+      return res.status(200).json({ update: true, message: "Deleted" });
+    } else {
+      return res.json({
+        update: false,
+        message: "somthing error while delete subcategory!",
+      });
+    }
+  } catch (error) {
+    console.log(error);
   }
-}
+};
+
+//---------------- Get dashboard -------------------//
+
+export const getDashboard = async (req, res) => {
+  try { 
+
+     let company = {}
+     const activecompaniesCount = await companyDb.find({is_blocked:false}).count()
+     const activeJobs = await jobDb.find({is_active:true}).count()
+     const applications = await applicationDb.find({$or:[{status:"submitted"},{status:"viewed"}]}).count()
+     const activeUsers = await userDb.find({is_blocked:false}).count()
 
 
+     
 
+
+     return res.status(200).json({
+      activecompaniesCount,activeJobs,applications,activeUsers
+     })
+
+
+  } catch (error) {
+    console.log(error);
+  }
+};
