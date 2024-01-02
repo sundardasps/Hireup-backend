@@ -10,7 +10,7 @@ import resumeDb from "../../models/resumeModel.js";
 
 //--------------------------------------------------Get cateogry----------------------------------------//
 
-export const getCategory = async (req, res) => {
+export const getCategory = async (req, res, next) => {
   try {
     const categoryData = await categoryDb.find({ is_active: true });
     if (categoryData) {
@@ -18,12 +18,14 @@ export const getCategory = async (req, res) => {
     } else {
       res.json({ message: "Network error" });
     }
-  } catch (error) {}
+  } catch (error) {
+    next(error);
+  }
 };
 
 //--------------------------------------------------Get jobs----------------------------------------//
 
-export const getAllJobs = async (req, res) => {
+export const getAllJobs = async (req, res, next) => {
   try {
     const jobs = await jobDb.find();
     const today = new Date();
@@ -41,27 +43,25 @@ export const getAllJobs = async (req, res) => {
       }
     });
 
-    
-    const { search, filter,scroll } = req.query;
+    const { search, filter, scroll } = req.query;
     let query = { is_delete: false };
-    
+
     //applied jobs finding
     const userData = await userDb.findOne({ _id: req.headers.userId });
-    const appliedJobsId = userData.appliedJobs
-    const applications = await applyJobDb.find({_id:appliedJobsId})
-    const appliedJobs = applications.map((value)=>{
-       return value.jobId
-    })
-    query =  { _id: { $nin: appliedJobs } }
-
+    const appliedJobsId = userData.appliedJobs;
+    const applications = await applyJobDb.find({ _id: appliedJobsId });
+    const appliedJobs = applications.map((value) => {
+      return value.jobId;
+    });
+    query = { _id: { $nin: appliedJobs } };
 
     const limit = 6;
     let skip = (scroll - 1) * 6;
     const count = await jobDb.find(query).countDocuments();
-    const totalScrolls = Math.ceil(count/limit)
+    const totalScrolls = Math.ceil(count / limit);
 
     if (search) {
-      skip = 0
+      skip = 0;
       query.$or = [
         { job_title: { $regex: new RegExp(search, "i") } },
         { companyName: { $regex: new RegExp(search, "i") } },
@@ -69,55 +69,65 @@ export const getAllJobs = async (req, res) => {
         { job_type: { $regex: new RegExp(search, "i") } },
       ];
     }
-   
+
     if (filter) {
-       skip = 0
+      skip = 0;
       query.job_title = { $regex: new RegExp(filter, "i") };
     }
 
-    const allJobs = await jobDb.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit)
+    const allJobs = await jobDb
+      .find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     if (allJobs) {
-
-    
-
-
-      return res.status(200).json({ dataFetched: true, data: allJobs ,count,totalScrolls });
+      return res
+        .status(200)
+        .json({ dataFetched: true, data: allJobs, count, totalScrolls });
     } else {
-      return res.json({ dataFetched: false, data: allJobs,count,totalScrolls });
+      return res.json({
+        dataFetched: false,
+        data: allJobs,
+        count,
+        totalScrolls,
+      });
     }
   } catch (error) {
-    console.log(error);  
+    next(error);
   }
 };
 
 //--------------------------------------------------Get profile----------------------------------------//
 
-export const getProfile = async (req, res) => {
+export const getProfile = async (req, res, next) => {
   try {
     const exist = await userDb.findOne({ _id: req.headers.userId });
-    const resumeIds = exist.resumes
-    const resumesData = await resumeDb.find({_id:resumeIds})
-  
+    const resumeIds = exist.resumes;
+    const resumesData = await resumeDb.find({ _id: resumeIds });
+
     let total = 0;
     if (exist && exist.experience) {
-        exist.experience.forEach((value, index) => {
+      exist.experience.forEach((value, index) => {
         total = total + Number(value.match(/\d+/g));
       });
     }
     if (exist) {
-      return res.status(200).json({ fetched: true, exist, total ,resume:resumesData});
+      return res
+        .status(200)
+        .json({ fetched: true, exist, total, resume: resumesData });
     } else {
-      return res.status(200).json({ fetched: false, data: [] ,resume:[]});
+      return res.status(200).json({ fetched: false, data: [], resume: [] });
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------------------------Edit profile----------------------------------------//
 
-export const editProfile = async (req, res) => {
+export const editProfile = async (req, res, next) => {
   try {
     const { name, title, place, number } = req.body;
     const updated = await userDb.findOneAndUpdate(
@@ -140,12 +150,13 @@ export const editProfile = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------------------------Edit Dp----------------------------------------//
 
-export const editUserDp = async (req, res) => {
+export const editUserDp = async (req, res, next) => {
   try {
     const userData = await userDb.findOne({ _id: req.headers.userId });
 
@@ -178,12 +189,13 @@ export const editUserDp = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------------------------Edit Bgimage----------------------------------------//
 
-export const editUserBgImg = async (req, res) => {
+export const editUserBgImg = async (req, res, next) => {
   try {
     const userData = await userDb.findOne({ _id: req.headers.userId });
     const prevImage = userData.userCoverDp;
@@ -215,12 +227,13 @@ export const editUserBgImg = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------------------------Add skills----------------------------------------//
 
-export const addSkills = async (req, res) => {
+export const addSkills = async (req, res, next) => {
   try {
     const data = req.body;
     const skill = data.skill;
@@ -248,12 +261,13 @@ export const addSkills = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------------------------Delete skill----------------------------------------//
 
-export const deleteSkill = async (req, res) => {
+export const deleteSkill = async (req, res, next) => {
   try {
     const { skill } = req.body;
     const result = await userDb.updateOne(
@@ -271,12 +285,13 @@ export const deleteSkill = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------------------------Add experience----------------------------------------//
 
-export const addExperience = async (req, res) => {
+export const addExperience = async (req, res, next) => {
   try {
     const { experience } = req.body;
     const trimmedExperience = experience.trim();
@@ -305,12 +320,13 @@ export const addExperience = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------------------------Edit experience----------------------------------------//
 
-export const editExperience = async (req, res) => {
+export const editExperience = async (req, res, next) => {
   try {
     const { value, edited } = req.body;
     const userId = req.headers.userId;
@@ -339,12 +355,15 @@ export const editExperience = async (req, res) => {
         });
       }
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
 //--------------------------------------------------Delete experience----------------------------------------//
 
-export const deleteExperience = async (req, res) => {
+export const deleteExperience = async (req, res, next) => {
   try {
     const { experience } = req.params;
     const trimmedExperience = experience.trim();
@@ -360,12 +379,15 @@ export const deleteExperience = async (req, res) => {
         message: "somthing error while delete experience!",
       });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
 //----------------------------------------Get All company for landing page----------------------------------------//
 
-export const getAllCompany = async (req, res) => {
+export const getAllCompany = async (req, res, next) => {
   try {
     const companyData = await companyDb.find();
     if (companyData) {
@@ -379,12 +401,15 @@ export const getAllCompany = async (req, res) => {
         message: "somthing error while fetching the data!",
       });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
 //----------------------------------------Add education----------------------------------------//
 
-export const addEducation = async (req, res) => {
+export const addEducation = async (req, res, next) => {
   try {
     const education = req.body;
     const exist = await userDb.findOne({
@@ -413,12 +438,15 @@ export const addEducation = async (req, res) => {
         });
       }
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
 //----------------------------------------Edit education----------------------------------------//
 
-export const editEducation = async (req, res) => {
+export const editEducation = async (req, res, next) => {
   try {
     const { prevData, editData } = req.body;
     const exist = await userDb.findOne({
@@ -448,12 +476,16 @@ export const editEducation = async (req, res) => {
         });
       }
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    console.log(error);
+    next(error);
+  }
 };
 
 //--------------------------------------------------Delete experience----------------------------------------//
 
-export const deleteEducation = async (req, res) => {
+export const deleteEducation = async (req, res, next) => {
   try {
     const prevData = req.body;
     const updated = await userDb.updateOne(
@@ -470,23 +502,23 @@ export const deleteEducation = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------------------------Apply job----------------------------------------//
 
-export const applyJob = async (req, res) => {
+export const applyJob = async (req, res, next) => {
   try {
-    const { companyId, jobId ,resume} = req.body;
-    let resumeUrl = ""
-    if(resume){
-      resumeUrl = resume
-    }else{
-    const img = req.file.path;
-    const uploadedImage = await uploadToCloudinary(img, "userResume");
-    resumeUrl=uploadedImage.url
+    const { companyId, jobId, resume } = req.body;
+    let resumeUrl = "";
+    if (resume) {
+      resumeUrl = resume;
+    } else {
+      const img = req.file.path;
+      const uploadedImage = await uploadToCloudinary(img, "userResume");
+      resumeUrl = uploadedImage.url;
     }
-  
 
     if (resumeUrl) {
       const applyJobData = new applyJobDb({
@@ -530,12 +562,13 @@ export const applyJob = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------------------------Applied job list----------------------------------------//
 
-export const appliedJobList = async (req, res) => {
+export const appliedJobList = async (req, res, next) => {
   try {
     const { filter, search } = req.query;
 
@@ -572,12 +605,13 @@ export const appliedJobList = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //---------------------------------------Check currect job applied or not -------------------------------------//
 
-export const checkJobappliedOrNot = async (req, res) => {
+export const checkJobappliedOrNot = async (req, res, next) => {
   try {
     const { userId, jobId } = req.query;
     const userData = await userDb.findOne({ _id: userId });
@@ -586,19 +620,20 @@ export const checkJobappliedOrNot = async (req, res) => {
       _id: jobId,
       appliedUsers: { $in: appliedJobsId },
     });
-    if (checkIsApplied) {    
+    if (checkIsApplied) {
       return res.status(200).json({ data: checkIsApplied, exist: true });
     } else {
       return res.status(200).json({ data: checkIsApplied, exist: false });
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //------------------------------------ Check applied job status -------------------------------------//
 
-export const checkJobAppliedStatus = async (req, res) => {
+export const checkJobAppliedStatus = async (req, res, next) => {
   try {
     const { userId, jobId } = req.query;
     const userData = await userDb.findOne({ _id: userId });
@@ -619,12 +654,13 @@ export const checkJobAppliedStatus = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //------------------------------------ User save jobs -------------------------------------//
 
-export const saveUserJob = async (req, res) => {
+export const saveUserJob = async (req, res, next) => {
   try {
     const exist = await userDb.findOne({
       _id: req.headers.userId,
@@ -642,12 +678,15 @@ export const saveUserJob = async (req, res) => {
       );
       return res.status(200).json({ saved: true, message: "Job saved." });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
 //------------------------------------Get User save jobs -------------------------------------//
 
-export const getUserSavedJobs = async (req, res) => {
+export const getUserSavedJobs = async (req, res, next) => {
   try {
     const userData = await userDb.findOne({ _id: req.headers.userId });
     const jobIds = userData.savedJobs;
@@ -659,14 +698,14 @@ export const getUserSavedJobs = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //------------------------------------unsave User save jobs -------------------------------------//
 
-export const unSaveJobs = async (req, res) => {
+export const unSaveJobs = async (req, res, next) => {
   try {
-
     const jobData = await userDb.updateOne(
       { _id: req.headers.userId },
       { $pull: { savedJobs: req.params.jobId } }
@@ -678,25 +717,29 @@ export const unSaveJobs = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------Save resume ----------------------------//
 
-export const addResume = async (req, res) => {
+export const addResume = async (req, res, next) => {
   try {
     const img = req.file.path;
     const uploadedImage = await uploadToCloudinary(img, "userResume");
-    const lastSlashIndex = uploadedImage.url.lastIndexOf('/');
-    const filename = lastSlashIndex !== -1 ? uploadedImage.url.substring(lastSlashIndex + 1) : null;
+    const lastSlashIndex = uploadedImage.url.lastIndexOf("/");
+    const filename =
+      lastSlashIndex !== -1
+        ? uploadedImage.url.substring(lastSlashIndex + 1)
+        : null;
     if (filename) {
       const resumeAdded = new resumeDb({
-        userId:req.headers.userId,
+        userId: req.headers.userId,
         resume: uploadedImage.url,
-        resumeName:filename
-      })
+        resumeName: filename,
+      });
       const savedData = await resumeAdded.save();
-      const stringId =  String(savedData._id )
+      const stringId = String(savedData._id);
       const userData = await userDb.findOneAndUpdate(
         { _id: req.headers.userId },
         { $push: { resumes: stringId } }
@@ -717,58 +760,63 @@ export const addResume = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
 //--------------------------------Delete resume ----------------------------//
 
-export const deleteResume = async (req,res) =>{
- try {
-      
-       const {resumeId} = req.params
-       const deleteFromUser = await userDb.findByIdAndUpdate({_id:req.headers.userId},{$pull:{resumes:resumeId}})
-       if(deleteFromUser){
-         const resumeData = await resumeDb.findOne({_id:resumeId})
-         const resume = resumeData.resume
-         const match = resume.match(/\/v\d+\/(.+?)\./);
-         const publicId = match ? match[1] : null;
-         cloudinary.v2.uploader
-         .destroy(publicId)
-         .then((res) => console.log("resume image deleted"));
-         const deleteResume = await resumeDb.findOneAndDelete({_id:resumeId})
-         if(deleteResume){
-           return res.status(200).json({deleted:true,message:"deleted."})
-         }else{
-          return res.status(200).json({deleted:false,message:"Somthing error while deleting."})
-         }
-       }
-
- } catch (error) {
-  console.log(error);
- }
-}
-
-//--------------------------------Delete resume ----------------------------//
-
-export const getUserResumes = async (req,res) =>{
+export const deleteResume = async (req, res, next) => {
   try {
-    const exist = await userDb.findOne({ _id: req.headers.userId });
-    const resumeIds = exist.resumes
-    const resumesData = await resumeDb.find({_id:resumeIds})
-    if(resumesData){
-      return res.status(200).json(resumesData)
-    }else{
-      return res.status(402).json(resumesData)
+    const { resumeId } = req.params;
+    const deleteFromUser = await userDb.findByIdAndUpdate(
+      { _id: req.headers.userId },
+      { $pull: { resumes: resumeId } }
+    );
+    if (deleteFromUser) {
+      const resumeData = await resumeDb.findOne({ _id: resumeId });
+      const resume = resumeData.resume;
+      const match = resume.match(/\/v\d+\/(.+?)\./);
+      const publicId = match ? match[1] : null;
+      cloudinary.v2.uploader
+        .destroy(publicId)
+        .then((res) => console.log("resume image deleted"));
+      const deleteResume = await resumeDb.findOneAndDelete({ _id: resumeId });
+      if (deleteResume) {
+        return res.status(200).json({ deleted: true, message: "deleted." });
+      } else {
+        return res
+          .status(200)
+          .json({ deleted: false, message: "Somthing error while deleting." });
+      }
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
-}
+};
 
+//--------------------------------Delete resume ----------------------------//
+
+export const getUserResumes = async (req, res, next) => {
+  try {
+    const exist = await userDb.findOne({ _id: req.headers.userId });
+    const resumeIds = exist.resumes;
+    const resumesData = await resumeDb.find({ _id: resumeIds });
+    if (resumesData) {
+      return res.status(200).json(resumesData);
+    } else {
+      return res.status(402).json(resumesData);
+    }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 
 //--------------------------------Get job details ----------------------------//
 
-export const jobFullDetails = async (req, res) => {
+export const jobFullDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
     const jobDetails = await jobDb.findOne({ _id: id });
@@ -786,7 +834,6 @@ export const jobFullDetails = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
-
-

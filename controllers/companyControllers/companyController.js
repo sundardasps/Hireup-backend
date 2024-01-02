@@ -12,7 +12,7 @@ import stripe from "stripe";
 
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
-export const addcompanyFullDetails = async (req, res) => {
+export const addcompanyFullDetails = async (req, res,next) => {
   try {
     const {
       companyName,
@@ -49,7 +49,10 @@ export const addcompanyFullDetails = async (req, res) => {
         .status(200)
         .json({ userData, updated: false, message: "Somthing error!" });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    next()
+  }
 };
 
 //------------------------------------------ Company Post adding  ----------------------------------------//
@@ -111,7 +114,7 @@ export const companyAddPost = async (req, res) => {
 
 //------------------------------------------ Company get posts ----------------------------------------//
 
-export const getPostCompany = async (req, res) => {
+export const getPostCompany = async (req, res,next) => {
   try {
     const allJobs = await jobDb.find({ is_delete: false });
     const today = new Date();
@@ -182,13 +185,13 @@ export const getPostCompany = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    next()
   }
 };
 
 //------------------------------------------ Company get postsfulldetails ----------------------------------------//
 
-export const jobFullDetails = async (req, res) => {
+export const jobFullDetails = async (req, res,next) => {
   try {
     const { id } = req.params;
     const jobDetails = await jobDb.findOne({ _id: id });
@@ -206,12 +209,13 @@ export const jobFullDetails = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    next(error)
   }
 };
 
 //------------------------------------------ Company edit profile ----------------------------------------//
 
-export const editeProfile = async (req, res) => {
+export const editeProfile = async (req, res,next) => {
   try {
     const {
       companyName,
@@ -254,7 +258,7 @@ export const editeProfile = async (req, res) => {
 
 //------------------------------------------ Company profile ----------------------------------------//
 
-export const getCompanyProfile = async (req, res) => {
+export const getCompanyProfile = async (req, res,next) => {
   try {
     const exist = await companyDb.findOne({ _id: req.headers.companyId });
     if (exist) {
@@ -269,7 +273,7 @@ export const getCompanyProfile = async (req, res) => {
 
 //------------------------------------------ Company profile image edit ----------------------------------------//
 
-export const editeProfileImage = async (req, res) => {
+export const editeProfileImage = async (req, res,next) => {
   try {
     const companyData = await companyDb.findOne({ _id: req.headers.companyId });
     const prevImage = companyData.image;
@@ -306,7 +310,7 @@ export const editeProfileImage = async (req, res) => {
 
 //------------------------------------------ Company Post edit ----------------------------------------//
 
-export const editPost = async (req, res) => {
+export const editPost = async (req, res,next) => {
   try {
     const {
       jobPosition,
@@ -345,7 +349,7 @@ export const editPost = async (req, res) => {
 
 //------------------------------------------ Company get Users ----------------------------------------//
 
-export const getUserList = async (req, res) => {
+export const getUserList = async (req, res,next) => {
   try {
     const { search, filter, page } = req.query;
 
@@ -379,7 +383,7 @@ export const getUserList = async (req, res) => {
 
 //------------------------------------------ Company details check ----------------------------------------//
 
-export const checkCompleted = async (req, res) => {
+export const checkCompleted = async (req, res,next) => {
   try {
     const profile = await companyDb.findOne({ _id: req.headers.companyId });
     const completed = profile.is_completed;
@@ -392,7 +396,7 @@ export const checkCompleted = async (req, res) => {
 
 //------------------------------------------ Company post delete ----------------------------------------//
 
-export const deleteJob = async (req, res) => {
+export const deleteJob = async (req, res,next) => {
   try {
     const id = req.params.id;
     const deleted = await jobDb.findOneAndUpdate(
@@ -414,7 +418,7 @@ export const deleteJob = async (req, res) => {
 
 //------------------------------------------ Get all category ----------------------------------------//
 
-export const getCategory = async (req, res) => {
+export const getCategory = async (req, res,next) => {
   try {
     const categoryData = await categoryDb.find({ is_active: true });
     if (categoryData) {
@@ -427,7 +431,7 @@ export const getCategory = async (req, res) => {
 
 //------------------------------------------ Get user details ----------------------------------------//
 
-export const getUserDetails = async (req, res) => {
+export const getUserDetails = async (req, res,next) => {
   try {
     const userData = await userDb.findOne({ _id: req.params.id });
     let total = 0;
@@ -451,7 +455,7 @@ export const getUserDetails = async (req, res) => {
 
 //------------------------------------------ Get applied user ----------------------------------------//
 
-export const getAppliedUsers = async (req, res) => {
+export const getAppliedUsers = async (req, res,next) => {
   try {
     const { jobId, search, filter } = req.query;
     let query = {};
@@ -503,7 +507,7 @@ export const getAppliedUsers = async (req, res) => {
 
 //------------------------------------------ Get Single User JobApplication ----------------------------------------//
 
-export const getSingleUserApplication = async (req, res) => {
+export const getSingleUserApplication = async (req, res,next) => {
   try {
     const { userId, jobId } = req.body;
 
@@ -547,7 +551,7 @@ export const getSingleUserApplication = async (req, res) => {
 
 //------------------------------------------ JobApplication reject ----------------------------------------//
 
-export const rejectUserApplication = async (req, res) => {
+export const rejectUserApplication = async (req, res,next) => {
   try {
     const { userId, jobId } = req.body;
     const userData = await userDb.findOne({ _id: userId });
@@ -593,7 +597,7 @@ export const rejectUserApplication = async (req, res) => {
 
 //------------------------------------------ schedule interview ----------------------------------------//
 
-export const scheduleInterview = async (req, res) => {
+export const scheduleInterview = async (req, res,next) => {
   try {
     const {
       values: { interviewer, type, date, requirement },
@@ -660,7 +664,7 @@ export const scheduleInterview = async (req, res) => {
 
 //------------------------------------------ scheduled interview list ----------------------------------------//
 
-export const getsheduledInterviews = async (req, res) => {
+export const getsheduledInterviews = async (req, res,next) => {
   try {
     const companyData = await companyDb.findOne({ _id: req.headers.companyId });
     const jobIds = companyData.jobs;
@@ -676,7 +680,7 @@ export const getsheduledInterviews = async (req, res) => {
 
 //------------------------------------------ schedule interview ----------------------------------------//
 
-export const reScheduleInterview = async (req, res) => {
+export const reScheduleInterview = async (req, res,next) => {
   try {
     const {
       values: { interviewer, type, date, requirement },
@@ -718,7 +722,7 @@ export const reScheduleInterview = async (req, res) => {
 
 //------------------------------------------ Stripe payment ----------------------------------------//
 
-export const stripePaymentInstance = async (req, res) => {
+export const stripePaymentInstance = async (req, res,next) => {
   try {
 
     const { price } = req.body;
@@ -743,10 +747,11 @@ export const stripePaymentInstance = async (req, res) => {
       cancel_url: `http://localhost:5173/company/status`,
       // success_url:`http://localhost:5173/company/status?success=true&session_id=${subscriptionType}`,
       // cancel_url: `http://localhost:5173/company/status?canceled=true`,
-    });
+    })
     console.log(session,"[[[[");
     res.status(200).json({ session });
   } catch (error) {
     console.log(error);
+    next(error)
   }
 };

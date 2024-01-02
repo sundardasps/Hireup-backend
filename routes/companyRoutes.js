@@ -32,6 +32,7 @@ import { companyAuth } from "../middleWares/auth.js";
 import upload from "../middleWares/multer.js";
 import {companyChats,companyCreateChat,companyFindChat, getSingleUser,} from '../controllers/chatControllers/chatController.js'
 import {companyAddMessage,companyGetMessages} from '../controllers/chatControllers/messageController.js'
+import { errorHandler } from "../middleWares/errorHandling.js";
 const companyRoute = express();
 
 companyRoute.post("/register", companyRegister);
@@ -60,7 +61,6 @@ companyRoute.get("/getAppliedUsers/",companyAuth,getAppliedUsers)
 companyRoute.put("/getSingleUserApplication",companyAuth,getSingleUserApplication)
 companyRoute.put("/rejectUserapplication",companyAuth,rejectUserApplication)
 
-
 companyRoute.get("/categoryDataForCompany",companyAuth,getCategory)
 companyRoute.post("/scheduleInterview",companyAuth,scheduleInterview)
 companyRoute.get("/getscheduleInterview",companyAuth,getsheduledInterviews)
@@ -75,5 +75,8 @@ companyRoute.get("/chat/:currentUserId",companyAuth,companyChats)
 companyRoute.get("/getSingleUser/:userId",companyAuth,getSingleUser)
 companyRoute.post("/companyAddMessage",companyAuth,companyAddMessage,)
 companyRoute.get("/companyGetMessages/:chatId",companyAuth,companyGetMessages)
+
+
+companyRoute.use(errorHandler)
 
 export default companyRoute;

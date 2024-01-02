@@ -1,3 +1,4 @@
 export const errorHandler =(err,req,res,next)=>{
-    res.status(200).json({message:"404 error"})
+    console.log(err.message,"---------------------------------------------------------");
+    res.status(404).json({message:"404 error"})
 }

@@ -40,7 +40,7 @@ import {getMessages,addMessage} from '../controllers/chatControllers/messageCont
 
 import { userAuth } from "../middleWares/auth.js";
 import upload from "../middleWares/multer.js";
-
+import {errorHandler} from '../middleWares/errorHandling.js'
 const userRoute = express();
 
 userRoute.post("/sigUp", userSignUp);
@@ -97,8 +97,7 @@ userRoute.get("/getSavedJobs",userAuth,getUserSavedJobs)
 userRoute.get("/unsaveJobs/:jobId",userAuth,unSaveJobs)
 userRoute.get("/jobDetails/:id", userAuth,jobFullDetails );
 
-
-
+userRoute.use(errorHandler)
 
 
 
