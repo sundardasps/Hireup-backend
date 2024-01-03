@@ -18,7 +18,7 @@ const sendMail = async (email,subject,url) => {
         ? console.log(err)
         : console.log(`=== Server is ready to take messages: ${success} ===`);
     });
-     console.log(url,"fsdfsfdsfsffg");
+     
     const mailOptions = {
       from: process.env.AUTHEMAIL,
       to: email,
@@ -33,7 +33,9 @@ const sendMail = async (email,subject,url) => {
         console.log("Email sent successfully");
       }
     });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export default sendMail;

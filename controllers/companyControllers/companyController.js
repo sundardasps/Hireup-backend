@@ -668,14 +668,17 @@ export const getsheduledInterviews = async (req, res,next) => {
   try {
     const companyData = await companyDb.findOne({ _id: req.headers.companyId });
     const jobIds = companyData.jobs;
-    const interviewsList = await intervieweDb.find({ jobId: { $in: jobIds } });
+
+    const interviewsList = await intervieweDb.find({ jobId: { $in: jobIds },is_canceled:false}).sort({createdAt:-1})
 
     if (interviewsList) {
       return res.status(200).json({ list: interviewsList });
     } else {
       return res.status(403).json({ list: [] });
     }
-  } catch (error) {}
+  } catch (error) {
+    next(error)
+  }
 };
 
 //------------------------------------------ schedule interview ----------------------------------------//
@@ -717,7 +720,9 @@ export const reScheduleInterview = async (req, res,next) => {
         .status(402)
         .json({ updated: false, message: "Something error while updation!" });
     }
-  } catch (error) {}
+  } catch (error) {
+    next(error)
+  }
 };
 
 //------------------------------------------ Stripe payment ----------------------------------------//
@@ -748,10 +753,37 @@ export const stripePaymentInstance = async (req, res,next) => {
       // success_url:`http://localhost:5173/company/status?success=true&session_id=${subscriptionType}`,
       // cancel_url: `http://localhost:5173/company/status?canceled=true`,
     })
-    console.log(session,"[[[[");
+    
     res.status(200).json({ session });
   } catch (error) {
     console.log(error);
     next(error)
   }
 };
+
+
+//------------------------------------------ Cancel interview ----------------------------------------//
+
+export const cancelInterview = async (req,res,next) =>{
+
+  try {
+    const interview = await intervieweDb.findOneAndUpdate({_id:req.params.id},{$set:{is_canceled:true}})
+    if(interview.is_canceled === true){
+      const companyData = await companyDb.findOne({_id:req.headers.companyId})
+      const jobData = await jobDb.findOne({ _id: interview.jobId});
+      let content = `Dear ${interview.userName},
+      We regret to inform you that there have been some changes leading to the cancellation of the HR interview scheduled for the ${jobData.job_title} position at ${jobData.companyName}.
+      We apologize for any inconvenience this may cause.
+      Best regards,
+      ${companyData.companyName}
+    `;
+     sendMail(interview.userEmail, "Interview canceled", content);
+     return res.status(200).json({canceled:true,message:"Interview canceled."})
+    }else{          
+     return res.status(200).json({canceled:false,message:"Something error while cancelation!"})
+    }
+  } catch (error) {
+    console.log(error)
+    next(error)
+  }
+}

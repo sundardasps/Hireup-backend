@@ -37,6 +37,10 @@ const interviewSchema = mongoose.Schema({
   userNumber: {
     type: String,
   },
+  is_canceled:{
+    type:Boolean,
+    default:false
+  }
 
 },{
   timestamps: true,

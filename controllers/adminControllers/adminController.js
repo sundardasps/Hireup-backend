@@ -272,11 +272,7 @@ export const getDashboard = async (req, res) => {
      const activeJobs = await jobDb.find({is_active:true}).count()
      const applications = await applicationDb.find({$or:[{status:"submitted"},{status:"viewed"}]}).count()
      const activeUsers = await userDb.find({is_blocked:false}).count()
-
-
      
-
-
      return res.status(200).json({
       activecompaniesCount,activeJobs,applications,activeUsers
      })
@@ -286,3 +282,21 @@ export const getDashboard = async (req, res) => {
     console.log(error);
   }
 };
+
+//---------------- Get approved-------------------//
+export const approveComapny  = async (req,res) =>{
+
+  try {
+    const companyData = await companyDb.findOne({_id:req.params.id})
+    const prevState = companyData.is_approved
+    const approveOrnot = await companyDb.findOneAndUpdate({_id:req.params.id},{$set:{is_approved:!prevState}})
+    if(approveOrnot.is_approved === true){
+      return res.status(200).json({approved:true,message:"Company approved"})
+    }else{
+      return res.status(200).json({approved:false,message:"Approvel canceled"})
+    }
+  } catch (error) {
+     console.log(error);    
+  }
+
+}

@@ -11,7 +11,8 @@ import {
   categoryList,
   titleBlockorUnblock,
   deleteSubcategory,
-  getDashboard
+  getDashboard,
+  approveComapny
 } from "../controllers/adminControllers/adminController.js";
 
 import { adminAuth } from "../middleWares/auth.js";
@@ -26,6 +27,8 @@ adminRoute.put("/userBlockOrUnblock/:id",adminAuth,userBlockOrUnblock);
 //-------------------------------------------Companies section-------------------------------------//
 adminRoute.get("/companies",adminAuth,companiesList);
 adminRoute.post("/companyBlockOrUnblock/:id",adminAuth,companyBlockOrUnblock);
+adminRoute.put("/companyApprovel/:id",adminAuth,approveComapny);
+
 
 //-------------------------------------------Category section-------------------------------------//
 adminRoute.get("/categoryData",adminAuth,categoryList);

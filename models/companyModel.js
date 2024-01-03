@@ -72,6 +72,10 @@ const companySchema = new mongoose.Schema({
   is_payment:{
     type:Number,
     default:0,
+  },
+  is_approved:{
+    type:Boolean,
+    default:false
   }
 });
 

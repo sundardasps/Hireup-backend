@@ -390,10 +390,17 @@ export const deleteExperience = async (req, res, next) => {
 export const getAllCompany = async (req, res, next) => {
   try {
     const companyData = await companyDb.find();
+    const activecompaniesCount = await companyDb.find({is_blocked:false}).count()
+    const activeJobs = await jobDb.find({is_active:true}).count()
+    const applications = await applyJobDb.find({$or:[{status:"submitted"},{status:"viewed"}]}).count()
+    const activeUsers = await userDb.find({is_blocked:false}).count()
+
+    console.log(activecompaniesCount,activeJobs,activeUsers,applications,"kkkkkkkkkkkkkkkkkkkk");
+
     if (companyData) {
       return res
         .status(200)
-        .json({ fetched: true, companyData, message: "Data fetched!" });
+        .json({ fetched: true, companyData,activeUsers,activecompaniesCount,activeJobs, message: "Data fetched!" });
     } else {
       return res.json({
         fetched: false,
