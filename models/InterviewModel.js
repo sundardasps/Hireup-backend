@@ -37,6 +37,9 @@ const interviewSchema = mongoose.Schema({
   userNumber: {
     type: String,
   },
+  jobTitle:{
+    type:String
+  },
   is_canceled:{
     type:Boolean,
     default:false

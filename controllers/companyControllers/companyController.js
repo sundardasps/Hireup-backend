@@ -498,7 +498,7 @@ export const getAppliedUsers = async (req, res,next) => {
         message: "Data fetched!",
       });
     } else {
-      return res.json({ fetched: false, message: "Data fetched!" });
+      return res.json({ fetched: false, message: "Data fetched!"});
     }
   } catch (error) {
     console.log(error);
@@ -510,7 +510,6 @@ export const getAppliedUsers = async (req, res,next) => {
 export const getSingleUserApplication = async (req, res,next) => {
   try {
     const { userId, jobId } = req.body;
-
     const userData = await userDb.findOne({ _id: userId });
     const applicationsId = userData.appliedJobs;
     const jobApplication = await userApplicationDb.findOneAndUpdate(
@@ -597,7 +596,7 @@ export const rejectUserApplication = async (req, res,next) => {
 
 //------------------------------------------ schedule interview ----------------------------------------//
 
-export const scheduleInterview = async (req, res,next) => {
+export const scheduleInterview = async (req, res) => {
   try {
     const {
       values: { interviewer, type, date, requirement },
@@ -605,7 +604,6 @@ export const scheduleInterview = async (req, res,next) => {
       jobId,
     } = req.body;
     const exist = await intervieweDb.findOne({ userId, jobId });
-    console.log(exist);
     if (exist) {
       return res.json({
         created: false,
@@ -616,12 +614,12 @@ export const scheduleInterview = async (req, res,next) => {
       const applicationsId = userData.appliedJobs;
       const application = await userApplicationDb.findOneAndUpdate(
         {
-          _id: applicationsId,
-          userId,
-          jobId,
+            _id: applicationsId,
+            userId,
+            jobId,
         },
-        { $set: { status: "sheduled" } }
-      );
+        { $set: { status: "scheduled" } }
+    );
       const jobData = await jobDb.findOne({ _id: jobId });
       const inrterview = await intervieweDb({
         date,
@@ -640,7 +638,6 @@ export const scheduleInterview = async (req, res,next) => {
       const savedInterview = await inrterview.save();
       if (savedInterview) {
         let content = `Dear ${userData.userName},
-
           We are pleased to inform you that you have been selected for an HR interview for the ${jobData.job_title} position at ${jobData.companyName}. Your application was reviewed by ${interviewer} on ${date}. Please prepare for the interview, taking note of the preferred requirements outlined.
           
           Here are the details for the interview: ${requirement}.
@@ -668,9 +665,7 @@ export const getsheduledInterviews = async (req, res,next) => {
   try {
     const companyData = await companyDb.findOne({ _id: req.headers.companyId });
     const jobIds = companyData.jobs;
-
-    const interviewsList = await intervieweDb.find({ jobId: { $in: jobIds },is_canceled:false}).sort({createdAt:-1})
-
+    const interviewsList = await intervieweDb.find({ jobId: { $in: jobIds }}).sort({createdAt:-1})
     if (interviewsList) {
       return res.status(200).json({ list: interviewsList });
     } else {
@@ -767,17 +762,22 @@ export const stripePaymentInstance = async (req, res,next) => {
 export const cancelInterview = async (req,res,next) =>{
 
   try {
-    const interview = await intervieweDb.findOneAndUpdate({_id:req.params.id},{$set:{is_canceled:true}})
-    if(interview.is_canceled === true){
+    const prevData = await intervieweDb.findOne({_id:req.params.id})
+    const interview = await intervieweDb.deleteOne({_id:req.params.id})
+    if(interview.deletedCount === 1){
       const companyData = await companyDb.findOne({_id:req.headers.companyId})
-      const jobData = await jobDb.findOne({ _id: interview.jobId});
-      let content = `Dear ${interview.userName},
-      We regret to inform you that there have been some changes leading to the cancellation of the HR interview scheduled for the ${jobData.job_title} position at ${jobData.companyName}.
+      const application = await userApplicationDb.findOneAndUpdate(
+        {
+          _id: prevData .applicationId,
+        },{$set:{status:"Interview canceled"}}
+        );
+      let content = `Dear ${prevData.userName},
+      We regret to inform you that there have been some changes leading to the cancellation of the HR interview scheduled for the ${prevData.job_title} position at ${prevData.companyName}.
       We apologize for any inconvenience this may cause.
       Best regards,
       ${companyData.companyName}
-    `;
-     sendMail(interview.userEmail, "Interview canceled", content);
+    ` 
+     sendMail(prevData.userEmail, "Interview canceled", content);
      return res.status(200).json({canceled:true,message:"Interview canceled."})
     }else{          
      return res.status(200).json({canceled:false,message:"Something error while cancelation!"})
