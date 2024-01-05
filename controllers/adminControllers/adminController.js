@@ -103,6 +103,10 @@ export const companyBlockOrUnblock = async (req, res) => {
       { _id: id },
       { $set: { is_blocked: !company.is_blocked } }
     );
+
+    const jobs = updated.jobs
+    const jobData = await jobDb.updateMany({_id:{$in:jobs}},{$set:{company_Block:!company.is_blocked }})
+     console.log(jobData,"ffffffffffff");
     if (updated) {
       return res.status(200).json({ updated: true });
     } else {
@@ -300,3 +304,36 @@ export const approveComapny  = async (req,res) =>{
   }
 
 }
+
+//--------------------------------Get job details ----------------------------//
+
+export const jobFullDetails = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const jobDetails = await jobDb.findOne({ _id: id });
+    const jobs = jobDetails.appliedUsers
+    let count = 0;
+    jobs.forEach((v, i) =>{ count = count + 1; });
+    const companyData = await companyDb.findOne({ _id: jobDetails.companyId });
+    const isApproved = companyData.is_approved;
+    if (jobDetails) {
+  
+      return res.status(200).json({
+        fetched: true,
+        jobDetails,
+        message: "Details fetched!",
+        isApproved,
+        count
+      });
+    } else {
+      return res.json({
+        fetched: false,
+        jobDetails,
+        message: "Something error while fetching data",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};

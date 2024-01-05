@@ -7,7 +7,7 @@ import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import applyJobDb from "../../models/jobApply.js";
 import sendMail from "../../utils/sendMails.js";
 import resumeDb from "../../models/resumeModel.js";
-
+import interviewDb from "../../models/InterviewModel.js";
 //--------------------------------------------------Get cateogry----------------------------------------//
 
 export const getCategory = async (req, res, next) => {
@@ -44,16 +44,19 @@ export const getAllJobs = async (req, res, next) => {
     });
 
     const { search, filter, scroll } = req.query;
-    let query = { is_delete: false };
 
     //applied jobs finding
+
     const userData = await userDb.findOne({ _id: req.headers.userId });
     const appliedJobsId = userData.appliedJobs;
     const applications = await applyJobDb.find({ _id: appliedJobsId });
     const appliedJobs = applications.map((value) => {
       return value.jobId;
     });
-    query = { _id: { $nin: appliedJobs } };
+
+    let query = { is_delete: false };
+    query.company_Block = false;
+    query._id = { $nin: appliedJobs };
 
     const limit = 6;
     let skip = (scroll - 1) * 6;
@@ -81,12 +84,12 @@ export const getAllJobs = async (req, res, next) => {
       .skip(skip)
       .limit(limit);
 
-    if (allJobs) {
+    if (allJobs.length>0) {
       return res
         .status(200)
         .json({ dataFetched: true, data: allJobs, count, totalScrolls });
     } else {
-      return res.json({
+      return res.status(404).json({
         dataFetched: false,
         data: allJobs,
         count,
@@ -390,17 +393,32 @@ export const deleteExperience = async (req, res, next) => {
 export const getAllCompany = async (req, res, next) => {
   try {
     const companyData = await companyDb.find();
-    const activecompaniesCount = await companyDb.find({is_blocked:false}).count()
-    const activeJobs = await jobDb.find({is_active:true}).count()
-    const applications = await applyJobDb.find({$or:[{status:"submitted"},{status:"viewed"}]}).count()
-    const activeUsers = await userDb.find({is_blocked:false}).count()
+    const activecompaniesCount = await companyDb
+      .find({ is_blocked: false })
+      .count();
+    const activeJobs = await jobDb.find({ is_active: true }).count();
+    const applications = await applyJobDb
+      .find({ $or: [{ status: "submitted" }, { status: "viewed" }] })
+      .count();
+    const activeUsers = await userDb.find({ is_blocked: false }).count();
 
-    console.log(activecompaniesCount,activeJobs,activeUsers,applications,"kkkkkkkkkkkkkkkkkkkk");
+    console.log(
+      activecompaniesCount,
+      activeJobs,
+      activeUsers,
+      applications,
+      "kkkkkkkkkkkkkkkkkkkk"
+    );
 
     if (companyData) {
-      return res
-        .status(200)
-        .json({ fetched: true, companyData,activeUsers,activecompaniesCount,activeJobs, message: "Data fetched!" });
+      return res.status(200).json({
+        fetched: true,
+        companyData,
+        activeUsers,
+        activecompaniesCount,
+        activeJobs,
+        message: "Data fetched!",
+      });
     } else {
       return res.json({
         fetched: false,
@@ -653,9 +671,20 @@ export const checkJobAppliedStatus = async (req, res, next) => {
     );
     const application = await applyJobDb.findOne({ _id: commonValuesId });
     const applicationStatus = application.status;
-
     if (applicationStatus) {
-      return res.status(200).json({ application, status: applicationStatus });
+      var scheduledDate = "";
+      if (applicationStatus === "scheduled") {
+        const sheduleData = await interviewDb.findOne({
+          _id: application.sheduled_Id,
+        });
+        scheduledDate = sheduleData.date;
+      }
+      console.log(scheduledDate, "iiii");
+      return res.status(200).json({
+        application,
+        status: applicationStatus,
+        interviewDate: scheduledDate,
+      });
     } else {
       return res.status(400).json({ status: applicationStatus });
     }
@@ -827,11 +856,19 @@ export const jobFullDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
     const jobDetails = await jobDb.findOne({ _id: id });
-
+    const jobs = jobDetails.appliedUsers
+    let count = 0;
+    jobs.forEach((v, i) =>{ count = count + 1; });
+    const companyData = await companyDb.findOne({ _id: jobDetails.companyId });
+    const isApproved = companyData.is_approved;
     if (jobDetails) {
-      return res
-        .status(200)
-        .json({ fetched: true, jobDetails, message: "Details fetched!" });
+      return res.status(200).json({
+        fetched: true,
+        jobDetails,
+        message: "Details fetched!",
+        isApproved,
+        count
+      });
     } else {
       return res.json({
         fetched: false,

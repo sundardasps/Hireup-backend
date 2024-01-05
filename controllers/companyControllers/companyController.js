@@ -12,7 +12,7 @@ import stripe from "stripe";
 
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
-export const addcompanyFullDetails = async (req, res,next) => {
+export const addcompanyFullDetails = async (req, res, next) => {
   try {
     const {
       companyName,
@@ -51,7 +51,7 @@ export const addcompanyFullDetails = async (req, res,next) => {
     }
   } catch (error) {
     console.log(error);
-    next()
+    next();
   }
 };
 
@@ -66,9 +66,10 @@ export const companyAddPost = async (req, res) => {
       skills,
       responsibilities,
       endTime,
-      salery,field,
+      salery,
+      field,
     } = req.body;
-    console.log(req.body,"kkkkkkkkkk");
+    console.log(req.body, "kkkkkkkkkk");
     const id = req.headers.companyId;
     const company = await companyDb.findOne({ _id: id });
 
@@ -114,7 +115,7 @@ export const companyAddPost = async (req, res) => {
 
 //------------------------------------------ Company get posts ----------------------------------------//
 
-export const getPostCompany = async (req, res,next) => {
+export const getPostCompany = async (req, res, next) => {
   try {
     const allJobs = await jobDb.find({ is_delete: false });
     const today = new Date();
@@ -185,13 +186,13 @@ export const getPostCompany = async (req, res,next) => {
     }
   } catch (error) {
     console.error(error);
-    next()
+    next();
   }
 };
 
 //------------------------------------------ Company get postsfulldetails ----------------------------------------//
 
-export const jobFullDetails = async (req, res,next) => {
+export const jobFullDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
     const jobDetails = await jobDb.findOne({ _id: id });
@@ -209,13 +210,13 @@ export const jobFullDetails = async (req, res,next) => {
     }
   } catch (error) {
     console.log(error);
-    next(error)
+    next(error);
   }
 };
 
 //------------------------------------------ Company edit profile ----------------------------------------//
 
-export const editeProfile = async (req, res,next) => {
+export const editeProfile = async (req, res, next) => {
   try {
     const {
       companyName,
@@ -258,7 +259,7 @@ export const editeProfile = async (req, res,next) => {
 
 //------------------------------------------ Company profile ----------------------------------------//
 
-export const getCompanyProfile = async (req, res,next) => {
+export const getCompanyProfile = async (req, res, next) => {
   try {
     const exist = await companyDb.findOne({ _id: req.headers.companyId });
     if (exist) {
@@ -273,7 +274,7 @@ export const getCompanyProfile = async (req, res,next) => {
 
 //------------------------------------------ Company profile image edit ----------------------------------------//
 
-export const editeProfileImage = async (req, res,next) => {
+export const editeProfileImage = async (req, res, next) => {
   try {
     const companyData = await companyDb.findOne({ _id: req.headers.companyId });
     const prevImage = companyData.image;
@@ -310,7 +311,7 @@ export const editeProfileImage = async (req, res,next) => {
 
 //------------------------------------------ Company Post edit ----------------------------------------//
 
-export const editPost = async (req, res,next) => {
+export const editPost = async (req, res, next) => {
   try {
     const {
       jobPosition,
@@ -349,7 +350,7 @@ export const editPost = async (req, res,next) => {
 
 //------------------------------------------ Company get Users ----------------------------------------//
 
-export const getUserList = async (req, res,next) => {
+export const getUserList = async (req, res, next) => {
   try {
     const { search, filter, page } = req.query;
 
@@ -383,7 +384,7 @@ export const getUserList = async (req, res,next) => {
 
 //------------------------------------------ Company details check ----------------------------------------//
 
-export const checkCompleted = async (req, res,next) => {
+export const checkCompleted = async (req, res, next) => {
   try {
     const profile = await companyDb.findOne({ _id: req.headers.companyId });
     const completed = profile.is_completed;
@@ -396,7 +397,7 @@ export const checkCompleted = async (req, res,next) => {
 
 //------------------------------------------ Company post delete ----------------------------------------//
 
-export const deleteJob = async (req, res,next) => {
+export const deleteJob = async (req, res, next) => {
   try {
     const id = req.params.id;
     const deleted = await jobDb.findOneAndUpdate(
@@ -418,7 +419,7 @@ export const deleteJob = async (req, res,next) => {
 
 //------------------------------------------ Get all category ----------------------------------------//
 
-export const getCategory = async (req, res,next) => {
+export const getCategory = async (req, res, next) => {
   try {
     const categoryData = await categoryDb.find({ is_active: true });
     if (categoryData) {
@@ -431,7 +432,7 @@ export const getCategory = async (req, res,next) => {
 
 //------------------------------------------ Get user details ----------------------------------------//
 
-export const getUserDetails = async (req, res,next) => {
+export const getUserDetails = async (req, res, next) => {
   try {
     const userData = await userDb.findOne({ _id: req.params.id });
     let total = 0;
@@ -455,7 +456,7 @@ export const getUserDetails = async (req, res,next) => {
 
 //------------------------------------------ Get applied user ----------------------------------------//
 
-export const getAppliedUsers = async (req, res,next) => {
+export const getAppliedUsers = async (req, res, next) => {
   try {
     const { jobId, search, filter } = req.query;
     let query = {};
@@ -498,7 +499,7 @@ export const getAppliedUsers = async (req, res,next) => {
         message: "Data fetched!",
       });
     } else {
-      return res.json({ fetched: false, message: "Data fetched!"});
+      return res.json({ fetched: false, message: "Data fetched!" });
     }
   } catch (error) {
     console.log(error);
@@ -507,7 +508,7 @@ export const getAppliedUsers = async (req, res,next) => {
 
 //------------------------------------------ Get Single User JobApplication ----------------------------------------//
 
-export const getSingleUserApplication = async (req, res,next) => {
+export const getSingleUserApplication = async (req, res, next) => {
   try {
     const { userId, jobId } = req.body;
     const userData = await userDb.findOne({ _id: userId });
@@ -550,7 +551,7 @@ export const getSingleUserApplication = async (req, res,next) => {
 
 //------------------------------------------ JobApplication reject ----------------------------------------//
 
-export const rejectUserApplication = async (req, res,next) => {
+export const rejectUserApplication = async (req, res, next) => {
   try {
     const { userId, jobId } = req.body;
     const userData = await userDb.findOne({ _id: userId });
@@ -614,12 +615,12 @@ export const scheduleInterview = async (req, res) => {
       const applicationsId = userData.appliedJobs;
       const application = await userApplicationDb.findOneAndUpdate(
         {
-            _id: applicationsId,
-            userId,
-            jobId,
+          _id: applicationsId,
+          userId,
+          jobId,
         },
         { $set: { status: "scheduled" } }
-    );
+      );
       const jobData = await jobDb.findOne({ _id: jobId });
       const inrterview = await intervieweDb({
         date,
@@ -637,6 +638,15 @@ export const scheduleInterview = async (req, res) => {
       });
       const savedInterview = await inrterview.save();
       if (savedInterview) {
+        await userApplicationDb.findOneAndUpdate(
+          {
+            _id: applicationsId,
+            userId,
+            jobId,
+          },
+          { $set: { sheduled_Id: savedInterview._id } }
+        );
+
         let content = `Dear ${userData.userName},
           We are pleased to inform you that you have been selected for an HR interview for the ${jobData.job_title} position at ${jobData.companyName}. Your application was reviewed by ${interviewer} on ${date}. Please prepare for the interview, taking note of the preferred requirements outlined.
           
@@ -661,24 +671,26 @@ export const scheduleInterview = async (req, res) => {
 
 //------------------------------------------ scheduled interview list ----------------------------------------//
 
-export const getsheduledInterviews = async (req, res,next) => {
+export const getsheduledInterviews = async (req, res, next) => {
   try {
     const companyData = await companyDb.findOne({ _id: req.headers.companyId });
     const jobIds = companyData.jobs;
-    const interviewsList = await intervieweDb.find({ jobId: { $in: jobIds }}).sort({createdAt:-1})
+    const interviewsList = await intervieweDb
+      .find({ jobId: { $in: jobIds } })
+      .sort({ createdAt: -1 });
     if (interviewsList) {
       return res.status(200).json({ list: interviewsList });
     } else {
       return res.status(403).json({ list: [] });
     }
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
 //------------------------------------------ schedule interview ----------------------------------------//
 
-export const reScheduleInterview = async (req, res,next) => {
+export const reScheduleInterview = async (req, res, next) => {
   try {
     const {
       values: { interviewer, type, date, requirement },
@@ -716,74 +728,80 @@ export const reScheduleInterview = async (req, res,next) => {
         .json({ updated: false, message: "Something error while updation!" });
     }
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
 //------------------------------------------ Stripe payment ----------------------------------------//
 
-export const stripePaymentInstance = async (req, res,next) => {
+export const stripePaymentInstance = async (req, res, next) => {
   try {
-
     const { price } = req.body;
-    const subscriptionType = price.interval
+    const subscriptionType = price.interval;
     const clientId = req.headers.companyId;
     const stripeInstence = stripe(
       "sk_test_51OPm1SSEvDV8XVWTIhyCIMDhqJw8ueWYd8F26axdF8DYEdzff7hWU9f1dOsybJF5yHtw3VWvcBlbEyRaw7N6ZelB00EfrGJRnD"
     );
 
     const session = await stripeInstence.checkout.sessions.create({
-      billing_address_collection: 'auto',
+      billing_address_collection: "auto",
 
       line_items: [
         {
           price: price.id,
           quantity: 1,
-            
         },
       ],
-      mode: 'subscription',
-      success_url:`http://localhost:5173/company/status`,
+      mode: "subscription",
+      success_url: `http://localhost:5173/company/status`,
       cancel_url: `http://localhost:5173/company/status`,
       // success_url:`http://localhost:5173/company/status?success=true&session_id=${subscriptionType}`,
       // cancel_url: `http://localhost:5173/company/status?canceled=true`,
-    })
-    
+    });
+
     res.status(200).json({ session });
   } catch (error) {
     console.log(error);
-    next(error)
+    next(error);
   }
 };
 
-
 //------------------------------------------ Cancel interview ----------------------------------------//
 
-export const cancelInterview = async (req,res,next) =>{
-
+export const cancelInterview = async (req, res, next) => {
   try {
-    const prevData = await intervieweDb.findOne({_id:req.params.id})
-    const interview = await intervieweDb.deleteOne({_id:req.params.id})
-    if(interview.deletedCount === 1){
-      const companyData = await companyDb.findOne({_id:req.headers.companyId})
+    const prevData = await intervieweDb.findOne({ _id: req.params.id });
+    const interview = await intervieweDb.deleteOne({ _id: req.params.id });
+    if (interview.deletedCount === 1) {
+      const companyData = await companyDb.findOne({
+        _id: req.headers.companyId,
+      });
       const application = await userApplicationDb.findOneAndUpdate(
         {
-          _id: prevData .applicationId,
-        },{$set:{status:"Interview canceled"}}
-        );
+          _id: prevData.applicationId,
+        },
+        { $set: { status: "Interview canceled" } }
+      );
       let content = `Dear ${prevData.userName},
       We regret to inform you that there have been some changes leading to the cancellation of the HR interview scheduled for the ${prevData.job_title} position at ${prevData.companyName}.
       We apologize for any inconvenience this may cause.
       Best regards,
       ${companyData.companyName}
-    ` 
-     sendMail(prevData.userEmail, "Interview canceled", content);
-     return res.status(200).json({canceled:true,message:"Interview canceled."})
-    }else{          
-     return res.status(200).json({canceled:false,message:"Something error while cancelation!"})
+    `;
+      sendMail(prevData.userEmail, "Interview canceled", content);
+      return res
+        .status(200)
+        .json({ canceled: true, message: "Interview canceled." });
+    } else {
+      return res
+        .status(200)
+        .json({
+          canceled: false,
+          message: "Something error while cancelation!",
+        });
     }
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-}
+};

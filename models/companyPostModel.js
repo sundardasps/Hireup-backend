@@ -64,6 +64,10 @@ const post = mongoose.Schema({
  },
  field:{
   type:String
+ },
+ company_Block:{
+     type:Boolean,
+     default:false
  }
 },{
   timestamps:true

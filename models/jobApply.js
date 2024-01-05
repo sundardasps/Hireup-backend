@@ -21,6 +21,9 @@ const applyJobSchema = mongoose.Schema({
         type:String,
         default:"submitted",
      },
+    sheduled_Id:{
+        type:String
+    } 
 })
 
 const applyJob = mongoose.model("applyJob",applyJobSchema)
