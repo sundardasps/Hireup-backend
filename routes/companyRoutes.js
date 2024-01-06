@@ -27,7 +27,7 @@ import {
   getsheduledInterviews,
   reScheduleInterview,
   stripePaymentInstance,
-  cancelInterview
+  cancelInterview,paymentSucces,checkPayedorNot
 } from "../controllers/companyControllers/companyController.js";
 import { companyAuth } from "../middleWares/auth.js";
 import upload from "../middleWares/multer.js";
@@ -71,6 +71,10 @@ companyRoute.put("/cancelInterview/:id",companyAuth,cancelInterview)
 
 
 companyRoute.post("/create-checkout-session",companyAuth,stripePaymentInstance)
+companyRoute.post("/paymentsuccess",companyAuth,paymentSucces)
+companyRoute.get("/paymentStatus",companyAuth,checkPayedorNot)
+
+
 
 //----------------------------Company chat --------------------//
 companyRoute.post("/companyCreateChat",companyAuth,companyCreateChat)

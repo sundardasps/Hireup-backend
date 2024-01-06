@@ -8,7 +8,8 @@ import categoryDb from "../../models/categoryModel.js";
 import userApplicationDb from "../../models/jobApply.js";
 import sendMail from "../../utils/sendMails.js";
 import intervieweDb from "../../models/InterviewModel.js";
-import stripe from "stripe";
+import paymentDb from '../../models/payment.js'
+import Stripe from "stripe";
 
 //------------------------------------------ Company fulldetails adding ----------------------------------------//
 
@@ -737,34 +738,50 @@ export const reScheduleInterview = async (req, res, next) => {
 export const stripePaymentInstance = async (req, res, next) => {
   try {
     const { price } = req.body;
-    const subscriptionType = price.interval;
-    const clientId = req.headers.companyId;
-    const stripeInstence = stripe(
-      "sk_test_51OPm1SSEvDV8XVWTIhyCIMDhqJw8ueWYd8F26axdF8DYEdzff7hWU9f1dOsybJF5yHtw3VWvcBlbEyRaw7N6ZelB00EfrGJRnD"
+    const stripe = Stripe("sk_test_51ODm4bSHaENjV1jroo3TowfdHte8VmCm5hGFP5Llc0Gxzeh5sGAOo6gFGoDjFvFmeWXNLEd0yMOfIXj9KocfnBIO005dT0lJmM"
     );
 
-    const session = await stripeInstence.checkout.sessions.create({
-      billing_address_collection: "auto",
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: price.amount * 100,
+      currency: "inr",
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    })
 
-      line_items: [
-        {
-          price: price.id,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `http://localhost:5173/company/status`,
-      cancel_url: `http://localhost:5173/company/status`,
-      // success_url:`http://localhost:5173/company/status?success=true&session_id=${subscriptionType}`,
-      // cancel_url: `http://localhost:5173/company/status?canceled=true`,
-    });
-
-    res.status(200).json({ session });
+    res.status(200).json({ clientSecret: paymentIntent.client_secret ,selected:price});
   } catch (error) {
     console.log(error);
     next(error);
   }
 };
+
+//------------------------------------------ Stripe payment ----------------------------------------//
+export const paymentSucces = async (req,res,next) =>{
+
+  try {
+    const {paymentstatus, amount, type } =  req.body
+    if(paymentstatus === "succeeded"){
+      const payment = new paymentDb({
+      companyId:String(req.headers.companyId),
+      paymentAmount:amount,
+      subscription_type:type,
+        })
+       const savedPayment = await payment.save()
+       if(savedPayment){
+        const companydata =  await companyDb.findOneAndUpdate({_id:req.headers.companyId},{$set:{is_payment:1,paymentId:savedPayment._id}},{new:true})
+        return res.status(200).json({companydata,created:true,savedPayment})
+       }else{
+          return res.status(404).json({message:"server error."})
+       }
+    }else{
+     return res.status(404).json({message:"Strip server error."})
+    }
+  } catch (error) {
+    next(error)
+  }
+
+}
 
 //------------------------------------------ Cancel interview ----------------------------------------//
 
@@ -805,3 +822,20 @@ export const cancelInterview = async (req, res, next) => {
     next(error);
   }
 };
+
+
+//------------------------------------------ check is payed or not ----------------------------------------//
+
+export const checkPayedorNot  = async (req,res,next)=>{
+  try {
+     const companyData = await companyDb.findOne({_id:req.headers.companyId})
+     if(companyData.is_payment === 1){
+        return res.status(200).json(companyData)
+     }else{
+      return res.status(200).json(companyData)
+     }
+  } catch (error) {
+     next(error)
+  }
+
+}

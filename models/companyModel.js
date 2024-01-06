@@ -76,7 +76,11 @@ const companySchema = new mongoose.Schema({
   is_approved:{
     type:Boolean,
     default:false
-  }
+  },
+  paymentId:{
+    type:String,
+    default:""
+  },
 });
 
 const company = mongoose.model("company", companySchema);
