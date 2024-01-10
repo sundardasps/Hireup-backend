@@ -277,6 +277,7 @@ export const getDashboard = async (req, res) => {
      const applications = await applicationDb.find({$or:[{status:"submitted"},{status:"viewed"}]}).count()
      const activeUsers = await userDb.find({is_blocked:false}).count()
 
+
      const result = await paymentDb.aggregate([
       {
         $match: {
@@ -301,7 +302,8 @@ export const getDashboard = async (req, res) => {
     
     const { premium, basic, standard } = formattedResult;
     console.log(premium, basic, standard, grandTotal);
-         
+    
+     
      return res.status(200).json({
       activecompaniesCount,activeJobs,applications,activeUsers,premium, basic, standard ,grandTotal
      })
