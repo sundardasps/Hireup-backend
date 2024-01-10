@@ -3,7 +3,7 @@ import companyDb from "../../models/companyModel.js";
 import categoryDb from "../../models/categoryModel.js";
 import jobDb from "../../models/companyPostModel.js"
 import applicationDb from "../../models/jobApply.js"
-
+import paymentDb from "../../models/payment.js"
 import { query } from "express";
 
 //=====================================Users section====================================//
@@ -276,9 +276,34 @@ export const getDashboard = async (req, res) => {
      const activeJobs = await jobDb.find({is_active:true}).count()
      const applications = await applicationDb.find({$or:[{status:"submitted"},{status:"viewed"}]}).count()
      const activeUsers = await userDb.find({is_blocked:false}).count()
-     
+
+     const result = await paymentDb.aggregate([
+      {
+        $match: {
+          subscription_type: { $in: ['premium', 'standard', 'basic'] }
+        }
+      },
+      {
+        $group: {
+          _id: '$subscription_type',
+          totalAmount: { $sum: { $toInt: '$paymentAmount' } }
+        }
+      }
+    ]);
+    
+    const formattedResult = {};
+    let grandTotal = 0;
+    
+    result.forEach(({ _id, totalAmount }) => {
+      formattedResult[_id] = totalAmount;
+      grandTotal += totalAmount;
+    });
+    
+    const { premium, basic, standard } = formattedResult;
+    console.log(premium, basic, standard, grandTotal);
+         
      return res.status(200).json({
-      activecompaniesCount,activeJobs,applications,activeUsers
+      activecompaniesCount,activeJobs,applications,activeUsers,premium, basic, standard ,grandTotal
      })
 
 
