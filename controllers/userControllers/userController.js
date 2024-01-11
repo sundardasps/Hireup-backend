@@ -45,8 +45,6 @@ export const getAllJobs = async (req, res, next) => {
 
     const { search, filter, scroll } = req.query;
 
-    //applied jobs finding
-
     const userData = await userDb.findOne({ _id: req.headers.userId });
     const appliedJobsId = userData.appliedJobs;
     const applications = await applyJobDb.find({ _id: appliedJobsId });
@@ -89,7 +87,7 @@ export const getAllJobs = async (req, res, next) => {
         .status(200)
         .json({ dataFetched: true, data: allJobs, count, totalScrolls });
     } else {
-      return res.status(404).json({
+      return res.status(200).json({
         dataFetched: false,
         data: allJobs,
         count,
