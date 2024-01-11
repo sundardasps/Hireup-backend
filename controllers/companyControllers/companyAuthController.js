@@ -35,7 +35,7 @@ export const companyRegister = async (req, res) => {
           token: crypto.randomBytes(32).toString("hex"),
         }).save();
 
-        const url = `${process.env.FrontEnd_Url}company/${companyData._id}/varification/${emailToken.token}`;
+        const url = `${process.env.FRONTEND_ENDPOINT}/company/${companyData._id}/varification/${emailToken.token}`;
         console.log(url);
         sendMail(email, "Company Varification mail", url);
         return res.status(200).json({
@@ -113,7 +113,7 @@ export const companyLogin = async (req, res) => {
               token: crypto.randomBytes(32).toString("hex"),
             }).save();
 
-            const url = `${process.env.FrontEnd_Url}company/${exist._id}/varification/${emailToken.token}`;
+            const url = `${process.env.FRONTEND_ENDPOINT}/company/${exist._id}/varification/${emailToken.token}`;
             console.log(url);
             sendMail(email, "Company Varification mail", url);
             return res.status(200).json({
@@ -156,7 +156,7 @@ export const companyforgetPassword = async (req, res) => {
           companyId: exist._id,
           token: crypto.randomBytes(32).toString("hex"),
         }).save();
-        const url = `${process.env.FrontEnd_Url}company/${exist._id}/resetPassword/${emailToken.token}`;
+        const url = `${process.env.FRONTEND_ENDPOINT}/company/${exist._id}/resetPassword/${emailToken.token}`;
         console.log(url);
         sendMail(exist.email, "Reset password", url);
         return res.status(200).json({

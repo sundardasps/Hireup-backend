@@ -35,7 +35,7 @@ export const userSignUp = async (req, res) => {
           token: crypto.randomBytes(32).toString("hex"),
         }).save();
 
-        const url = `${process.env.FRONTEND_ENDPOINT}user/${userData._id}/varification/${emailToken.token}`;
+        const url = `${process.env.FRONTEND_ENDPOINT}/user/${userData._id}/varification/${emailToken.token}`;
 
         sendMail(email, "Varification mail", url);
         return res.status(200).json({
@@ -80,7 +80,7 @@ export const userLogin = async (req, res) => {
             token: crypto.randomBytes(32).toString("hex"),
           }).save();
 
-          const url = `${process.env.FRONTEND_ENDPOINT}user/${exist._id}/varification/${emailToken.token}`;
+          const url = `${process.env.FRONTEND_ENDPOINT}/user/${exist._id}/varification/${emailToken.token}`;
           sendMail(email, "Varification mail", url);
           return res.status(200).json({
             created: true,
@@ -152,7 +152,7 @@ export const forgetPassword = async (req, res) => {
           userId: exist._id,
           token: crypto.randomBytes(32).toString("hex"),
         }).save();
-        const url = `${process.env.FRONTEND_ENDPOINT}user/${exist._id}/resetPassword/${emailToken.token}`;
+        const url = `${process.env.FRONTEND_ENDPOINT}/user/${exist._id}/resetPassword/${emailToken.token}`;
         sendMail(exist.email, "Reset password", url);
         return res.status(200).json({
           created: true,
