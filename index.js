@@ -8,7 +8,7 @@ import {app,server} from './socket/socket.js'
 
 env.config()
 
-mongoose.connect("mongodb://127.0.0.1:27017/react-secondProject")
+mongoose.connect(process.env.MONGODB)
 
 //middleware
 app.use(express.json())

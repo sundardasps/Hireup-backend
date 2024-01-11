@@ -26,6 +26,7 @@ export const userAuth = async (req, res, next) => {
         return  res.json({ message: "user not authorised or inavid user" });
       }
     } else {
+      
       return  res.json({ message: "user not authorized" });
     }
 
