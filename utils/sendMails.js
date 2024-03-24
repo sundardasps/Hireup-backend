@@ -1,6 +1,6 @@
 import nodemailar from "nodemailer";
 
-const sendMail = async (email,subject,url) => {
+const sendMail = async (email, subject, url) => {
   try {
     const transporter = nodemailar.createTransport({
       host: "smtp.gmail.com",
@@ -18,12 +18,12 @@ const sendMail = async (email,subject,url) => {
         ? console.log(err)
         : console.log(`=== Server is ready to take messages: ${success} ===`);
     });
-     
+
     const mailOptions = {
       from: process.env.AUTHEMAIL,
       to: email,
-      subject:subject,
-      text:url
+      subject: subject,
+      text: url,
     };
 
     transporter.sendMail(mailOptions, function (err, data) {

@@ -1,40 +1,35 @@
 import { Server } from "socket.io";
 import express from "express";
 import http from "http";
-import cors from 'cors'
-import env from 'dotenv'
+import cors from "cors";
+import env from "dotenv";
 
-env.config()
+env.config();
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_ENDPOINT,  // Allow requests from this origin
-    methods: ["GET", "POST","PUT"],
+    origin: process.env.FRONTEND_ENDPOINT, // Allow requests from this origin
+    methods: ["GET", "POST", "PUT"],
     credentials: true,
   },
 });
 
-
 let activeUsers = [];
 
 io.on("connection", (socket) => {
-  socket.on("new-user-add",(newUserId) => {
+  socket.on("new-user-add", (newUserId) => {
     if (!activeUsers.some((user) => user.userId === newUserId)) {
-      activeUsers.push({userId: newUserId,socketId: socket.id});
+      activeUsers.push({ userId: newUserId, socketId: socket.id });
     }
-    io.emit("get-users",activeUsers);
+    io.emit("get-users", activeUsers);
   });
-    
-
-
 
   socket.on("disconnect", () => {
     activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
     io.emit("get-users", activeUsers);
   });
-  
 
   socket.on("send-message", (data) => {
     const { recieverId } = data;
@@ -43,9 +38,6 @@ io.on("connection", (socket) => {
       io.to(user.socketId).emit("receive-message", data);
     }
   });
- 
 });
 
-
-
-export { app,server };
+export { app, server };

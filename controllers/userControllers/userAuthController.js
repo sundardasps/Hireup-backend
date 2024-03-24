@@ -33,7 +33,7 @@ export const userSignUp = async (req, res) => {
         const emailToken = await new authToken({
           userId: userData.id,
           token: crypto.randomBytes(32).toString("hex"),
-        }).save();
+        }).save(); 
 
         const url = `${process.env.FRONTEND_ENDPOINT}/user/${userData._id}/varification/${emailToken.token}`;
 

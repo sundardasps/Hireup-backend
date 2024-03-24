@@ -52,12 +52,12 @@ export const getAllJobs = async (req, res, next) => {
       return value.jobId;
     });
 
-    let query = { is_delete: false };
+    const query = { is_delete: false };
     query.company_Block = false;
     query._id = { $nin: appliedJobs };
 
     const limit = 6;
-    let skip = (scroll - 1) * 6;
+    const skip = (scroll - 1) * 6;
     const count = await jobDb.find(query).countDocuments();
     const totalScrolls = Math.ceil(count / limit);
 
@@ -82,7 +82,7 @@ export const getAllJobs = async (req, res, next) => {
       .skip(skip)
       .limit(limit);
 
-    if (allJobs.length>0) {
+    if (allJobs.length > 0) {
       return res
         .status(200)
         .json({ dataFetched: true, data: allJobs, count, totalScrolls });
@@ -107,7 +107,7 @@ export const getProfile = async (req, res, next) => {
     const resumeIds = exist.resumes;
     const resumesData = await resumeDb.find({ _id: resumeIds });
 
-    let total = 0;
+    const total = 0;
     if (exist && exist.experience) {
       exist.experience.forEach((value, index) => {
         total = total + Number(value.match(/\d+/g));
@@ -390,7 +390,7 @@ export const deleteExperience = async (req, res, next) => {
 
 export const getAllCompany = async (req, res, next) => {
   try {
-    const companyData = await companyDb.find();
+    const companyData = await companyDb.find().limit(10);
     const activecompaniesCount = await companyDb
       .find({ is_blocked: false })
       .count();
@@ -400,13 +400,6 @@ export const getAllCompany = async (req, res, next) => {
       .count();
     const activeUsers = await userDb.find({ is_blocked: false }).count();
 
-    console.log(
-      activecompaniesCount,
-      activeJobs,
-      activeUsers,
-      applications,
-      "kkkkkkkkkkkkkkkkkkkk"
-    );
 
     if (companyData) {
       return res.status(200).json({
@@ -854,9 +847,11 @@ export const jobFullDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
     const jobDetails = await jobDb.findOne({ _id: id });
-    const jobs = jobDetails.appliedUsers
+    const jobs = jobDetails.appliedUsers;
     let count = 0;
-    jobs.forEach((v, i) =>{ count = count + 1; });
+    jobs.forEach((v, i) => {
+      count = count + 1;
+    });
     const companyData = await companyDb.findOne({ _id: jobDetails.companyId });
     const isApproved = companyData.is_approved;
     if (jobDetails) {
@@ -865,7 +860,7 @@ export const jobFullDetails = async (req, res, next) => {
         jobDetails,
         message: "Details fetched!",
         isApproved,
-        count
+        count,
       });
     } else {
       return res.json({
@@ -876,6 +871,80 @@ export const jobFullDetails = async (req, res, next) => {
     }
   } catch (error) {
     console.log(error);
+    next(error);
+  }
+};
+
+
+//--------------------------------Get jobs for landing page ----------------------------//
+
+export const getJobsName = async (req, res, next) => {
+  
+  try {
+
+    let query = {is_active:true}
+
+    const jobs = await categoryDb.aggregate([
+      
+      {$unwind:"$category"},
+      {$project:{name:"$category"}}
+
+    ])
+    
+    if(jobs.length > 0){
+
+      return res.status(200).json({
+        fetched: true,
+        jobs,
+        message: "data",
+      });
+    }else{
+      return res.status(403).json({
+        fetched: false,
+        jobs:[],
+        message: "Something error while fetching data",
+      });
+    }
+
+  } catch (error) {
+    console.log(error);
+    // next(error);
+  }
+};
+
+//--------------------------------Get jobs for landing page ----------------------------//
+
+
+export const getJobs = async (req, res, next) => {
+  try {
+    const { search } = req.query;
+    const query = { is_delete: false };
+    query.company_Block = false;
+    
+    if (search) {
+      query.$or = [
+        { job_title: { $regex: new RegExp(search, "i") } },
+        { companyName: { $regex: new RegExp(search, "i") } },
+        { companyLocation: { $regex: new RegExp(search, "i") } },
+        { job_type: { $regex: new RegExp(search, "i") } },
+      ];
+    }
+    const allJobs = await jobDb
+    .find(query)
+    .sort({ createdAt: -1 })
+    .limit(5);
+    
+    if (allJobs.length > 0) {
+      return res
+        .status(200)
+        .json({ dataFetched: true, data: allJobs  });
+    } else {
+      return res.status(200).json({
+        dataFetched: false,
+        data: allJobs,
+      });
+    }
+  } catch (error) {
     next(error);
   }
 };

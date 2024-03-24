@@ -11,10 +11,10 @@ env.config()
 mongoose.connect(process.env.MONGODB)
 
 //middleware
+
 app.use(express.json())
 
-
-//-------------------------requireing-Routes------------------------------//
+//-------------------------requireing-Routes----------------------------//
 
 import userRoute from './routes/userRoutes.js'
 import companyRoute from './routes/companyRoutes.js'
@@ -35,7 +35,6 @@ app.use("/company",companyRoute);
 app.use("/admin", adminRoute);
 
 //----------------------------------Server------------------------------//
-
 
 server.listen(process.env.PORT, () => {
   console.log(`server started running in ${process.env.PORT}`);

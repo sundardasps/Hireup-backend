@@ -1,9 +1,9 @@
 import userDb from "../../models/userModel.js";
 import companyDb from "../../models/companyModel.js";
 import categoryDb from "../../models/categoryModel.js";
-import jobDb from "../../models/companyPostModel.js"
-import applicationDb from "../../models/jobApply.js"
-import paymentDb from "../../models/payment.js"
+import jobDb from "../../models/companyPostModel.js";
+import applicationDb from "../../models/jobApply.js";
+import paymentDb from "../../models/payment.js";
 import { query } from "express";
 
 //=====================================Users section====================================//
@@ -66,7 +66,7 @@ export const userBlockOrUnblock = async (req, res) => {
 export const companiesList = async (req, res) => {
   try {
     const { page, search, filter } = req.query;
-    let query = { is_admin: false };
+    const query = { is_admin: false };
 
     if (filter === "Active") {
       query.is_blocked = false;
@@ -104,9 +104,11 @@ export const companyBlockOrUnblock = async (req, res) => {
       { $set: { is_blocked: !company.is_blocked } }
     );
 
-    const jobs = updated.jobs
-    const jobData = await jobDb.updateMany({_id:{$in:jobs}},{$set:{company_Block:!company.is_blocked }})
-     console.log(jobData,"ffffffffffff");
+    const jobs = updated.jobs;
+    const jobData = await jobDb.updateMany(
+      { _id: { $in: jobs } },
+      { $set: { company_Block: !company.is_blocked } }
+    );
     if (updated) {
       return res.status(200).json({ updated: true });
     } else {
@@ -269,68 +271,79 @@ export const deleteSubcategory = async (req, res) => {
 //---------------- Get dashboard -------------------//
 
 export const getDashboard = async (req, res) => {
-  try { 
+  try {
+    let company = {};
+    const activecompaniesCount = await companyDb
+      .find({ is_blocked: false })
+      .count();
+    const activeJobs = await jobDb.find({ is_active: true }).count();
+    const applications = await applicationDb
+      .find({ $or: [{ status: "submitted" }, { status: "viewed" }] })
+      .count();
+    const activeUsers = await userDb.find({ is_blocked: false }).count();
 
-     let company = {}
-     const activecompaniesCount = await companyDb.find({is_blocked:false}).count()
-     const activeJobs = await jobDb.find({is_active:true}).count()
-     const applications = await applicationDb.find({$or:[{status:"submitted"},{status:"viewed"}]}).count()
-     const activeUsers = await userDb.find({is_blocked:false}).count()
-
-
-     const result = await paymentDb.aggregate([
+    const result = await paymentDb.aggregate([
       {
         $match: {
-          subscription_type: { $in: ['premium', 'standard', 'basic'] }
-        }
+          subscription_type: { $in: ["premium", "standard", "basic"] },
+        },
       },
       {
         $group: {
-          _id: '$subscription_type',
-          totalAmount: { $sum: { $toInt: '$paymentAmount' } }
-        }
-      }
+          _id: "$subscription_type",
+          totalAmount: { $sum: { $toInt: "$paymentAmount" } },
+        },
+      },
     ]);
-    
+
     const formattedResult = {};
     let grandTotal = 0;
-    
+
     result.forEach(({ _id, totalAmount }) => {
       formattedResult[_id] = totalAmount;
       grandTotal += totalAmount;
     });
-    
+
     const { premium, basic, standard } = formattedResult;
     console.log(premium, basic, standard, grandTotal);
-    
-     
-     return res.status(200).json({
-      activecompaniesCount,activeJobs,applications,activeUsers,premium, basic, standard ,grandTotal
-     })
 
-
+    return res.status(200).json({
+      activecompaniesCount,
+      activeJobs,
+      applications,
+      activeUsers,
+      premium,
+      basic,
+      standard,
+      grandTotal,
+    });
   } catch (error) {
     console.log(error);
   }
 };
 
 //---------------- Get approved-------------------//
-export const approveComapny  = async (req,res) =>{
-
+export const approveComapny = async (req, res) => {
   try {
-    const companyData = await companyDb.findOne({_id:req.params.id})
-    const prevState = companyData.is_approved
-    const approveOrnot = await companyDb.findOneAndUpdate({_id:req.params.id},{$set:{is_approved:!prevState}})
-    if(approveOrnot.is_approved === true){
-      return res.status(200).json({approved:true,message:"Company approved"})
-    }else{
-      return res.status(200).json({approved:false,message:"Approvel canceled"})
+    const companyData = await companyDb.findOne({ _id: req.params.id });
+    const prevState = companyData.is_approved;
+    const approveOrnot = await companyDb.findOneAndUpdate(
+      { _id: req.params.id },
+      { $set: { is_approved: !prevState } }
+    );
+    if (approveOrnot.is_approved === true) {
+      return res
+        .status(200)
+        .json({ approved: true, message: "Company approved" });
+    } else {
+      return res
+        .status(200)
+        .json({ approved: false, message: "Approvel canceled" });
     }
   } catch (error) {
-     console.log(error);    
+    console.log(error);
   }
-
-}
+};
 
 //--------------------------------Get job details ----------------------------//
 
@@ -338,19 +351,20 @@ export const jobFullDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
     const jobDetails = await jobDb.findOne({ _id: id });
-    const jobs = jobDetails.appliedUsers
+    const jobs = jobDetails.appliedUsers;
     let count = 0;
-    jobs.forEach((v, i) =>{ count = count + 1; });
+    jobs.forEach((v, i) => {
+      count = count + 1;
+    });
     const companyData = await companyDb.findOne({ _id: jobDetails.companyId });
     const isApproved = companyData.is_approved;
     if (jobDetails) {
-  
       return res.status(200).json({
         fetched: true,
         jobDetails,
         message: "Details fetched!",
         isApproved,
-        count
+        count,
       });
     } else {
       return res.json({

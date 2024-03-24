@@ -31,16 +31,27 @@ import {
   getUserSavedJobs,
   unSaveJobs,
   addResume,
-  deleteResume,getUserResumes,
+  deleteResume,
+  getUserResumes,
   jobFullDetails,
+  getJobsName,
+  getJobs
 } from "../controllers/userControllers/userController.js";
 
-import {findChat,createChat,userChats,getSingleCompany} from '../controllers/chatControllers/chatController.js'
-import {getMessages,addMessage} from '../controllers/chatControllers/messageController.js'
+import {
+  findChat,
+  createChat,
+  userChats,
+  getSingleCompany,
+} from "../controllers/chatControllers/chatController.js";
+import {
+  getMessages,
+  addMessage,
+} from "../controllers/chatControllers/messageController.js";
 
 import { userAuth } from "../middleWares/auth.js";
 import upload from "../middleWares/multer.js";
-import {errorHandler} from '../middleWares/errorHandling.js'
+import { errorHandler } from "../middleWares/errorHandling.js";
 const userRoute = express();
 
 userRoute.post("/sigUp", userSignUp);
@@ -61,45 +72,43 @@ userRoute.post("/EditBgImg", userAuth, upload.single("image"), editUserBgImg);
 userRoute.post("/addSkill", userAuth, addSkills);
 userRoute.post("/deleteSkill", userAuth, deleteSkill);
 
-userRoute.post("/addExperience", userAuth,addExperience);
-userRoute.put("/editExperience", userAuth,editExperience);
-userRoute.post("/deleteExperience/:experience",userAuth,deleteExperience);
+userRoute.post("/addExperience", userAuth, addExperience);
+userRoute.put("/editExperience", userAuth, editExperience);
+userRoute.post("/deleteExperience/:experience", userAuth, deleteExperience);
 
-userRoute.post("/addEducation",userAuth,addEducation)
-userRoute.patch("/editEducation",userAuth,editEducation)
-userRoute.put("/deleteEducation",userAuth,deleteEducation)
+userRoute.post("/addEducation", userAuth, addEducation);
+userRoute.patch("/editEducation", userAuth, editEducation);
+userRoute.put("/deleteEducation", userAuth, deleteEducation);
 
-userRoute.post("/addResume",userAuth,upload.single("pdfFile"),addResume)
-userRoute.delete("/deleteResume/:resumeId",userAuth,deleteResume)
-userRoute.get("/getUserResumes",userAuth,getUserResumes)
+userRoute.post("/addResume", userAuth, upload.single("pdfFile"), addResume);
+userRoute.delete("/deleteResume/:resumeId", userAuth, deleteResume);
+userRoute.get("/getUserResumes", userAuth, getUserResumes);
 
-
-
-
-userRoute.post("/applyJOb",userAuth,upload.single("resume"),applyJob)
-userRoute.get("/getAppliedJobs",userAuth,appliedJobList)
-userRoute.get("/checkJobAppliedOrNot",userAuth,checkJobappliedOrNot)
-userRoute.get("/checkJobAppliedStatus",userAuth,checkJobAppliedStatus)
-
-userRoute.get("/getAllCompany",getAllCompany);
+userRoute.post("/applyJOb", userAuth, upload.single("resume"), applyJob);
+userRoute.get("/getAppliedJobs", userAuth, appliedJobList);
+userRoute.get("/checkJobAppliedOrNot", userAuth, checkJobappliedOrNot);
+userRoute.get("/checkJobAppliedStatus", userAuth, checkJobAppliedStatus);
 
 
 //----------------------------User chat --------------------//
-userRoute.get("/chat:currentUserId",userAuth,userChats)
-userRoute.get("/getSingleCompany/:companyId",userAuth,getSingleCompany)
-userRoute.post("/addMessage",userAuth,addMessage)
-userRoute.get("/getMessage/:chatId",userAuth,getMessages)
-userRoute.post("/createChat",userAuth,createChat)
+userRoute.get("/chat:currentUserId", userAuth, userChats);
+userRoute.get("/getSingleCompany/:companyId", userAuth, getSingleCompany);
+userRoute.post("/addMessage", userAuth, addMessage);
+userRoute.get("/getMessage/:chatId", userAuth, getMessages);
+userRoute.post("/createChat", userAuth, createChat);
 
 //----------------------------User Saved jobs --------------------//
-userRoute.put("/saveJobs/:jobId",userAuth,saveUserJob)
-userRoute.get("/getSavedJobs",userAuth,getUserSavedJobs)
-userRoute.get("/unsaveJobs/:jobId",userAuth,unSaveJobs)
-userRoute.get("/jobDetails/:id", userAuth,jobFullDetails );
+userRoute.put("/saveJobs/:jobId", userAuth, saveUserJob);
+userRoute.get("/getSavedJobs", userAuth, getUserSavedJobs);
+userRoute.get("/unsaveJobs/:jobId", userAuth, unSaveJobs);
+userRoute.get("/jobDetails/:id", userAuth, jobFullDetails);
 
-userRoute.use(errorHandler)
+//----------------------------landing page --------------------//
+userRoute.get("/getAllCompany", getAllCompany);
+userRoute.get("/getJobsName", getJobsName);
+userRoute.get("/getJobs", getJobs); 
 
 
-
+userRoute.use(errorHandler);
 
 export default userRoute;
