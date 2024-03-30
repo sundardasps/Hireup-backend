@@ -104,7 +104,7 @@ userRoute.get("/unsaveJobs/:jobId", userAuth, unSaveJobs);
 userRoute.get("/jobDetails/:id", userAuth, jobFullDetails);
 
 //----------------------------landing page --------------------//
-userRoute.get("/getAllCompany", getAllCompany);
+userRoute.get("/getAllCompany",getAllCompany);
 userRoute.get("/getJobsName", getJobsName);
 userRoute.get("/getJobs", getJobs); 
 

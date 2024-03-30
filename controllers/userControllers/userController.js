@@ -89,7 +89,7 @@ export const getAllJobs = async (req, res, next) => {
     } else {
       return res.status(200).json({
         dataFetched: false,
-        data: allJobs,
+        data: [],
         count,
         totalScrolls,
       });
@@ -107,7 +107,7 @@ export const getProfile = async (req, res, next) => {
     const resumeIds = exist.resumes;
     const resumesData = await resumeDb.find({ _id: resumeIds });
 
-    const total = 0;
+    let total = 0;
     if (exist && exist.experience) {
       exist.experience.forEach((value, index) => {
         total = total + Number(value.match(/\d+/g));
@@ -116,7 +116,7 @@ export const getProfile = async (req, res, next) => {
     if (exist) {
       return res
         .status(200)
-        .json({ fetched: true, exist, total, resume: resumesData });
+        .json({ fetched: true,exist, total, resume: resumesData });
     } else {
       return res.status(200).json({ fetched: false, data: [], resume: [] });
     }
@@ -717,7 +717,7 @@ export const getUserSavedJobs = async (req, res, next) => {
   try {
     const userData = await userDb.findOne({ _id: req.headers.userId });
     const jobIds = userData.savedJobs;
-    const jobsData = await jobDb.find({ _id: jobIds });
+    const jobsData = await jobDb.find({ _id:jobIds });
     if (jobsData) {
       return res.status(200).json({ data: jobsData });
     } else {
@@ -860,6 +860,7 @@ export const jobFullDetails = async (req, res, next) => {
         jobDetails,
         message: "Details fetched!",
         isApproved,
+        companyData,
         count,
       });
     } else {
@@ -908,7 +909,7 @@ export const getJobsName = async (req, res, next) => {
 
   } catch (error) {
     console.log(error);
-    // next(error);
+    next(error);
   }
 };
 
@@ -932,7 +933,7 @@ export const getJobs = async (req, res, next) => {
     const allJobs = await jobDb
     .find(query)
     .sort({ createdAt: -1 })
-    .limit(5);
+    .limit(6);
     
     if (allJobs.length > 0) {
       return res
