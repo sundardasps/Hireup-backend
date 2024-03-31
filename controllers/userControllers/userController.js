@@ -27,13 +27,14 @@ export const getCategory = async (req, res, next) => {
 
 export const getAllJobs = async (req, res, next) => {
   try {
+    
     const jobs = await jobDb.find();
     const today = new Date();
     const year = today.getFullYear();
     const month = (today.getMonth() + 1).toString().padStart(2, "0");
     const day = today.getDate().toString().padStart(2, "0");
     const formattedDate = `${year}-${month}-${day}`;
-
+    
     jobs.forEach(async (value) => {
       if (value.end_time < formattedDate) {
         await jobDb.findOneAndUpdate(
@@ -42,25 +43,25 @@ export const getAllJobs = async (req, res, next) => {
         );
       }
     });
-
+    
     const { search, filter, scroll } = req.query;
-
+    
     const userData = await userDb.findOne({ _id: req.headers.userId });
     const appliedJobsId = userData.appliedJobs;
     const applications = await applyJobDb.find({ _id: appliedJobsId });
     const appliedJobs = applications.map((value) => {
       return value.jobId;
     });
-
+    
     const query = { is_delete: false };
     query.company_Block = false;
     query._id = { $nin: appliedJobs };
-
+    
     const limit = 6;
-    const skip = (scroll - 1) * 6;
+    let skip = (scroll - 1) * 6;
     const count = await jobDb.find(query).countDocuments();
     const totalScrolls = Math.ceil(count / limit);
-
+    
     if (search) {
       skip = 0;
       query.$or = [
@@ -70,20 +71,19 @@ export const getAllJobs = async (req, res, next) => {
         { job_type: { $regex: new RegExp(search, "i") } },
       ];
     }
-
+    
     if (filter) {
       skip = 0;
       query.job_title = { $regex: new RegExp(filter, "i") };
     }
-
+    
     const allJobs = await jobDb
       .find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
-
-    if (allJobs.length > 0) {
-      return res
+      if (allJobs.length > 0) {
+        return res
         .status(200)
         .json({ dataFetched: true, data: allJobs, count, totalScrolls });
     } else {
