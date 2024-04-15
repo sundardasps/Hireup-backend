@@ -31,7 +31,7 @@ export const userChats = async (req, res) => {
     const {currentUserId} = req.params
     const chats = await chatModel.find({
       members: { $in: [currentUserId] },
-    } )
+    } ).sort({ createdAt:-1});
     if(chats){
     return res.status(200).json(chats);
     }
@@ -101,7 +101,12 @@ try {
   const {currentUserId} = req.params
   const chats = await chatModel.find({
     members: { $in: [currentUserId] },
-  });
+  }).sort({ createdAt:-1});
+
+ console.log(chats,"llllllllllllllllllll");
+
+
+
   if(chats){
   return res.status(200).json(chats);
   }
